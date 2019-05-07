@@ -1,11 +1,16 @@
+from sys import setrecursionlimit
+
 import cv2
 import find_face_candidate as ffc 
 import numpy as np
+import gc
 
 if (__name__ == "__main__"):
+	setrecursionlimit(100000)
+
 	#imageName = input("Input name of the image:")
-	imageName = './friend.jpg'
-	image = cv2.imread(imageName).astype(float)
+	imageName = './friend2.jpg'
+	image = cv2.imread(imageName).astype(np.float)
 
 	#convert channel color
 	m, n, p = image.shape
@@ -19,3 +24,4 @@ if (__name__ == "__main__"):
 			image[i, j, 2] = temp
 
 	ffc.get_possible_face_regions(image)
+	gc.collect()
