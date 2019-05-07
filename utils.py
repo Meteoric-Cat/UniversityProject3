@@ -4,6 +4,8 @@ from math import acos, pi, sqrt
 
 ROUNDX = [-1, -1, -1, 0, 0, 0, 1, 1, 1]
 ROUNDY = [-1, 0, 1, -1, 0, 1, -1, 0, 1]
+STEPX = [0, 1, 1, 1]
+STEPY = [1, -1, 0, 1]
 
 def get_size_and_ranges(image):
 	if (len(image.shape) == 3):
@@ -73,7 +75,7 @@ def convert_rgb_to_hsv(image, m = None, n = None, tempX = None, tempY = None):
 
 def filter_with_binary_median_filter(image, m = None, n = None, tempX = None, tempY = None, filter_radius = 1):
 	if (filter_radius != 1):
-		print('filter radius has not supported yet')
+		print('this filter has not been supported')
 		return
 
 	if (m == None):
@@ -105,15 +107,82 @@ def filter_with_binary_median_filter(image, m = None, n = None, tempX = None, te
 
 	return image
 
-def transform_with_binary_erosion(image, m = None, n = None, tempX = None, tempY = None, filter_size = 3):
+def scan_region(image, m, n, steps, region_info, regionCount, i, j, temp, temp1):
+	if (steps[i, j] != 0):
+		return
+
+	for k in temp:
+		if (image[i + ROUNDX[k], j + ROUNDY[k]] == 0):
+			return 
+
+	steps[i, j] = regionCount
+	for k in temp:
+		image[i + ROUNDX[k], j + ROUNDY[k]] += 1
+
+	#if (i <= region_info[regionCount][0]):
+	region_info[regionCount][0] = min(i, region_info[regionCount][0])
+	region_info[regionCount][1] = min(j, region_info[regionCount][1])
+	#else:
+	#if (i >= region_info[regionCount][2]):
+	region_info[regionCount][2] = max(i, region_info[regionCount][2])
+	region_info[regionCount][3] = max(j, region_info[regionCount][3])
+
+	for k in temp1:
+		if (0 < i + STEPX[k] < m):
+			if (0 < j + STEPY[k] < n):
+				scan_region(image, m, n, steps, region_info, regionCount, i + STEPX[k], j + STEPY[k], temp, temp1)
+
+	# for k in temp:
+	# 	valuex = i + ROUNDX[k]
+	# 	valuey = j + ROUNDY[k]
+
+	# 	if (0 < valuex < m):
+	# 		if (0 < valuey < n):
+	# 			if (steps[valuex, valuey] == 0):
+	# 				scan_region(image, m, n, steps, region_info, regionCount, valuex, valuey, temp, temp1)
+
+def transform_with_open_operator(image, region_info, m = None, n = None, tempX = None, tempY = None, filter_size = 3):
 	if (filter_size != 3):
-		print('filter size has not been supported')
+		print('this filter has not been supported')
 		return
 
 	if (m == None):
 		m, n, tempX, tempY = get_size_and_ranges(image)
 		if (m == -1):
-			print("something wrong 5")
+			print('something wrong 5')
 			return
 
-	#continue here
+	if (region_info == None):
+		print('something wrong 6')
+		return
+
+	temp = range(0, 9)
+	temp1 = range(0, 4)
+	regionCount = 0
+	steps = np.zeros((m, n))
+	tempX = range(1, m - 1)
+	tempY = range(1, n - 1)
+	surround = True
+
+	for i in tempX:
+		for j in tempY:
+			if (image[i, j] == 1):
+				if (steps[i, j] == 0):
+					surround = True
+					for k in temp:
+						if (image[i + ROUNDX[k], j + ROUNDY[k]] != 1):
+							surround = False
+							break
+					if (surround):
+						regionCount += 1
+						region_info.append([i, j, i, j])
+
+						scan_region(image, m - 1, n - 1, steps, region_info, regionCount, i, j, temp, temp1)
+
+	for i in tempX:
+		for j in tempY:
+			if (image[i, j] <= 1):
+				image[i, j] = 0
+			else:
+				image[i, j] = 1
+

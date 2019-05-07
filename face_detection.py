@@ -5,7 +5,7 @@ import numpy as np
 if (__name__ == "__main__"):
 	#imageName = input("Input name of the image:")
 	imageName = './friend.jpg'
-	image = cv2.imread(imageName).astype(np.float)
+	image = cv2.imread(imageName).astype(float)
 
 	#convert channel color
 	m, n, p = image.shape
