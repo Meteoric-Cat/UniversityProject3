@@ -116,6 +116,7 @@ def scan_region(image, m, n, steps, region_info, regionCount, i, j, temp, temp1)
 			return 
 
 	steps[i, j] = regionCount
+	region_info[regionCount][4] += 1
 	for k in temp:
 		image[i + ROUNDX[k], j + ROUNDY[k]] += 1
 
@@ -175,7 +176,7 @@ def transform_with_open_operator(image, region_info, m = None, n = None, tempX =
 							break
 					if (surround):
 						regionCount += 1
-						region_info.append([i, j, i, j])
+						region_info.append([i, j, i, j, 0])
 
 						scan_region(image, m - 1, n - 1, steps, region_info, regionCount, i, j, temp, temp1)
 
@@ -185,4 +186,3 @@ def transform_with_open_operator(image, region_info, m = None, n = None, tempX =
 				image[i, j] = 0
 			else:
 				image[i, j] = 1
-
