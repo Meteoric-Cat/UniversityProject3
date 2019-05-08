@@ -59,7 +59,7 @@ def convert_rgb_to_hsv(image, m = None, n = None, tempX = None, tempY = None):
 		for j in tempY:
 			temp = sqrt((image[i, j, 0] - image[i, j, 1])**2 + \
 					(image[i, j, 0] - image[i, j, 2]) * (image[i, j, 1] - image[i, j, 2]))
-			if (temp == 0.0):
+			if (temp == 0.000000000):
 				temp = 1		
 			h[i, j] = acos(0.5 * (2 * image[i, j, 0] - image[i, j, 1] - image[i, j, 2]) / temp) * 180 / pi
 			if (image[i, j, 2] > image[i, j, 1]):
@@ -113,7 +113,7 @@ def filter_with_binary_median_filter(image, m = None, n = None, tempX = None, te
 
 	return image
 
-def scan_region(image, m, n, steps, region_info, regionCount, i, j, temp, temp1):
+def scan_useful_region(image, m, n, steps, region_info, regionCount, i, j, temp, temp1):
 	# if (steps[i, j] != 0):
 	# 	return
 
@@ -137,7 +137,7 @@ def scan_region(image, m, n, steps, region_info, regionCount, i, j, temp, temp1)
 	# for k in temp1:
 	# 	if (0 < i + STEPX[k] < m):
 	# 		if (0 < j + STEPY[k] < n):				
-	# 			scan_region(image, m, n, steps, region_info, regionCount, i + STEPX[k], j + STEPY[k], temp, temp1)
+	# 			scan_useful_region(image, m, n, steps, region_info, regionCount, i + STEPX[k], j + STEPY[k], temp, temp1)
 
 	for k in temp1:
 		valuex = i + STEPX[k]
@@ -146,7 +146,7 @@ def scan_region(image, m, n, steps, region_info, regionCount, i, j, temp, temp1)
 		if (0 < valuex < m):
 			if (0 < valuey < n):
 				if (steps[valuex, valuey] == 0):
-					scan_region(image, m, n, steps, region_info, regionCount, valuex, valuey, temp, temp1)
+					scan_useful_region(image, m, n, steps, region_info, regionCount, valuex, valuey, temp, temp1)
 
 def transform_with_open_operator(image, region_info, m = None, n = None, tempX = None, tempY = None, filter_size = 3):
 	if (filter_size != 3):
@@ -184,7 +184,7 @@ def transform_with_open_operator(image, region_info, m = None, n = None, tempX =
 						regionCount += 1
 						region_info.append([i, j, i, j, 0])
 
-						scan_region(image, m - 1, n - 1, steps, region_info, regionCount, i, j, temp, temp1)
+						scan_useful_region(image, m - 1, n - 1, steps, region_info, regionCount, i, j, temp, temp1)
 
 	for i in tempX:
 		for j in tempY:
@@ -204,3 +204,23 @@ def count_useful_pixels(image, region):
 				count += 1
 
 	return count
+
+def scan_region(image, steps, m, n, i, j, region_value, region_info, temp):	
+	steps[i, j] = 1
+	region_info[4] += 1
+
+	region_info[0] = min(i, region_info[0])
+	region_info[1] = min(j, region_info[1])
+
+	region_info[2] = max(i, region_info[2])
+	region_info[3] = max(j, region_info[3])
+
+	for k in temp:
+		valuex = i + STEPX[k]
+		valuey = j + STEPY[k]
+
+		if (0 <= i < m):
+			if (0 <= j < n):
+				if (steps[i, j] == 0):
+					if (image[i, j] = region_value):
+						scan_region(image, steps, m, n, valuex, valuey, region_value, region_info, temp)

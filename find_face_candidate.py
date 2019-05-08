@@ -14,7 +14,7 @@ def build_binary_skin_map(image, r, g, h, s, v, height = None, width = None, tem
 
 	for i in tempX:
 		for j in tempY:
-			if ((image[i, j, 0] > image[i, j, 1]) or (abs(image[i, j, 0] - image[i, j, 1]) >= 11)):
+			if ((image[i, j, 0] > image[i, j, 1]) and (abs(image[i, j, 0] - image[i, j, 1]) >= 11)):
 				if ((0.33 <= r[i, j] <= 0.6) and (0.25 <= g[i, j] <= 0.37)):
 					if ((340 <= h[i, j] <= 359) or (0 <= h[i, j] <= 50)):
 						if (0.12 <= s[i, j] <= 0.7):						
@@ -42,6 +42,31 @@ def get_useful_regions_base_on_ratio(image, region_list, area_size = (30, 30), a
 					result.append(region)
 	return result
 
+def find_possible_eye_blocks(image, m, n, possible_eye_info, aspect_ratio = (0.2, 1.67), width_ratio = (0.028, 0.4), occupancy_ratio = 0.3):
+	temp1 = range(0, m)
+	temp2 = range(0, n)
+
+	steps = np.zeros((m, n))	
+	eyeRegionCount = -1
+	temp = range(0, 4)
+
+	for i in temp1:
+		for j in temp2:
+			if (steps[i, j] == 0)
+				if (image[i, j] == 0):
+					regionInfo = [i, j, i, j, 0]					
+					ut.scan_region(image, steps, m, n, i, j, 0, regionInfo, temp)
+
+					height = abs(regionInfo[0] - regionInfo[2])
+					width = abs(regionInfo[1] - regionInfo[3])
+
+					if (aspect_ratio[0] <= (height / width) <= aspect_ratio[1]):
+						if (occupancy_ratio <= (regionInfo[4] / (width * height))):
+							if (width_ratio[0] <= (width / n) <= width_ratio[1]):
+								possible_eye_info.append(regionInfo)
+
+def match_eyes(image, m, n, possible_eye_info):
+
 
 def get_possible_face_regions(image):
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)
@@ -56,18 +81,20 @@ def get_possible_face_regions(image):
 	ut.filter_with_binary_median_filter(skinMap, m, n, tempX, tempY)
 
 	regionInfo = [['hello world']]
+	# kernel = np.ones((3,3))
+	# skinMap = cv2.morphologyEx(skinMap, cv2.MORPH_OPEN, kernel)
 	ut.transform_with_open_operator(skinMap, regionInfo, m, n, tempX, tempY)	
 
-	regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, area_size = (30, 30), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4)
+	# regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, area_size = (30, 30), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4)
 
-	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-	# image[:, :] = skinMap[:, :] * 255
+	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
+	image[:, :] = skinMap[:, :] * 255
 
 	image = image.astype(np.uint8)
-	temp = len(regionInfo)
-	if (temp > 0):
-		for i in range(0, temp):
-			cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
+	# temp = len(regionInfo)
+	# if (temp > 0):
+	# 	for i in range(0, temp):
+	# 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
 	cv2.imshow('friend', image)
 	cv2.waitKey(0)

@@ -9,7 +9,7 @@ if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
 	#imageName = input("Input name of the image:")
-	imageName = './friend2.jpg'
+	imageName = './friend3.jpg'
 	image = cv2.imread(imageName).astype(np.float)
 
 	#convert channel color
