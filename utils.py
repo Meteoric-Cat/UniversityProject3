@@ -1,5 +1,5 @@
 import numpy as np
-#import cv2
+import cv2
 from math import acos, pi, sqrt
 
 ROUNDX = [-1, -1, -1, 0, 0, 0, 1, 1, 1]
@@ -219,8 +219,21 @@ def scan_region(image, steps, m, n, i, j, region_value, region_info, temp):
 		valuex = i + STEPX[k]
 		valuey = j + STEPY[k]
 
-		if (0 <= i < m):
-			if (0 <= j < n):
-				if (steps[i, j] == 0):
-					if (image[i, j] = region_value):
+		if (0 <= valuex < m):
+			if (0 <= valuey < n):
+				if (steps[valuex, valuey] == 0):
+					if (image[valuex, valuey] < 125):
 						scan_region(image, steps, m, n, valuex, valuey, region_value, region_info, temp)
+
+def split_image_into_images(image, region_info, directory = "face_database/%s.jpg"):
+	temp = range(0, len(region_info))
+
+	for i in temp:
+		subImage = image[region_info[i][0] : region_info[i][2], region_info[i][1] : region_info[i][3]]		
+		cv2.imwrite(directory % i, subImage)
+
+def find_angle_between_two_vectors(vector1, vector2):
+	v1dist = sqrt(vector1[0]**2 + vector1[1]**2)
+	v2dist = sqrt(vector2[0]**2 + vecotr2[1]**2)
+
+	return acos((vector1[0] * vector2[0] + vector1[1] * vector2[1]) / (v1dist * v2dist)) * 180 / pi

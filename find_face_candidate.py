@@ -42,30 +42,67 @@ def get_useful_regions_base_on_ratio(image, region_list, area_size = (30, 30), a
 					result.append(region)
 	return result
 
-def find_possible_eye_blocks(image, m, n, possible_eye_info, aspect_ratio = (0.2, 1.67), width_ratio = (0.028, 0.4), occupancy_ratio = 0.3):
-	temp1 = range(0, m)
-	temp2 = range(0, n)
-
+def find_possible_eye_blocks(image, m, n, tempX, tempY, possible_eye_info, 
+		aspect_ratio = (0.2, 1.67), width_ratio = (0.028, 0.4), occupancy_ratio = 0.3):
 	steps = np.zeros((m, n))	
-	eyeRegionCount = -1
 	temp = range(0, 4)
+	count = 0
 
-	for i in temp1:
-		for j in temp2:
-			if (steps[i, j] == 0)
+	for i in tempX:
+		for j in tempY:
+			if (steps[i, j] == 0):
 				if (image[i, j] == 0):
+					count += 1
 					regionInfo = [i, j, i, j, 0]					
 					ut.scan_region(image, steps, m, n, i, j, 0, regionInfo, temp)
 
 					height = abs(regionInfo[0] - regionInfo[2])
 					width = abs(regionInfo[1] - regionInfo[3])
+					if (width * height == 0):
+						continue
 
 					if (aspect_ratio[0] <= (height / width) <= aspect_ratio[1]):
 						if (occupancy_ratio <= (regionInfo[4] / (width * height))):
 							if (width_ratio[0] <= (width / n) <= width_ratio[1]):
 								possible_eye_info.append(regionInfo)
+	print(count)
 
-def match_eyes(image, m, n, possible_eye_info):
+def match_eyes(image, m, n, possible_eye_info, pair_size_error = 20, dist_ratio = (0.2, 0.65)):
+	temp = range(0, len(possible_eye_info))
+	result = []
+
+	for i in temp:
+		height1 = possible_eye_info[i][2] - possible_eye_info[i][0]
+		width1 = possible_eye_info[i][3] - possible_eye_info[i][1]
+		centroid1y = (possible_eye_info[i][1] + possible_eye_info[i][3]) / 2
+
+		for j in temp:
+			height2 = possible_eye_info[j][2] - possible_eye_info[j][0]
+			width2 = possible_eye_info[j][3] - possible_eye_info[j][1]
+
+			if (abs(width1 - width2) <= pair_size_error):
+				if (abs(height2 - height1) < pair_size_error):
+					centroid2y = (possible_eye_info[j][1] + possible_eye_info[j][3]) / 2
+					dist = abs(centroid2y - centroid1y)
+
+					if (dist_ratio[0] <= (dist / n) <= dist_ratio[1]):
+						result.append(possible_eye_info[i])
+						result.append(possible_eye_info[j])
+						return result
+	return result
+
+def check_and_transform_region(region_skin_image):
+	m, n, tempX, tempY = ut.get_size_and_ranges(region_skin_image)
+	eyeBlockInfo = []
+
+	find_possible_eye_blocks(region_skin_image, m, n, tempX, tempY, eyeBlockInfo)
+	print(eyeBlockInfo)
+
+	eyeBlockInfo = match_eyes(region_skin_image, m, n, eyeBlockInfo)
+	if (len(eyeBlockInfo) == 0):
+		return False
+
+	return True
 
 
 def get_possible_face_regions(image):
@@ -85,16 +122,31 @@ def get_possible_face_regions(image):
 	# skinMap = cv2.morphologyEx(skinMap, cv2.MORPH_OPEN, kernel)
 	ut.transform_with_open_operator(skinMap, regionInfo, m, n, tempX, tempY)	
 
-	# regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, area_size = (30, 30), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4)
+	regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, area_size = (60, 60), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4)
 
-	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-	image[:, :] = skinMap[:, :] * 255
+	result = []	
+	for region in regionInfo:
+		print(region)
+		tempImage = skinMap[region[0]:region[2], region[1]:region[3]]
+		#print(tempImage.shape)
+		if (check_and_transform_region(tempImage) == True):
+			result.append(region)		
+	regionInfo = result
 
+	#display image to check the bounding box
+	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
+	# image[:, :] = skinMap[:, :] * 255
+	
 	image = image.astype(np.uint8)
-	# temp = len(regionInfo)
-	# if (temp > 0):
-	# 	for i in range(0, temp):
-	# 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
+	temp = len(regionInfo)
+	if (temp > 0):
+		for i in range(0, temp):
+			cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
 	cv2.imshow('friend', image)
 	cv2.waitKey(0)
+
+	#divide image and save it to database
+	#ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/gray%s.jpg")
+
+
