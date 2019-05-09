@@ -120,7 +120,6 @@ def scan_useful_region(image, m, n, steps, region_info, regionCount, i, j, temp,
 	for k in temp:
 		if (image[i + ROUNDX[k], j + ROUNDY[k]] == 0):
 			return 
-
 	steps[i, j] = regionCount
 	region_info[regionCount][4] += 1
 	for k in temp:
@@ -177,9 +176,11 @@ def transform_with_open_operator(image, region_info, m = None, n = None, tempX =
 				if (steps[i, j] == 0):
 					surround = True
 					for k in temp:
-						if (image[i + ROUNDX[k], j + ROUNDY[k]] != 1):
-							surround = False
-							break
+						if (0 <= i + ROUNDX[k] < m):
+							if (0 <= j + ROUNDY[k] < n):
+								if (image[i + ROUNDX[k], j + ROUNDY[k]] != 1):
+									surround = False
+									break
 					if (surround):
 						regionCount += 1
 						region_info.append([i, j, i, j, 0])

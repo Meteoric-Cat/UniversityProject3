@@ -135,9 +135,10 @@ def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2
 	return [eye2[1] - eye1[1], eye1[0] - eye2[0]]
 
 def transform_base_on_eye_pairs(region_image, region_skin_image, eye_pairs,
-		m, n, tempX, tempY):
+		m, n, tempX, tempY, directory):
 	faceBorder = find_longest_border(region_skin_image, m, n, tempX, tempY)
 	downVector = [0, -1]
+	count = 0
 
 	for eye1, eye2 in eye_pairs:
 		centroid1 = [(eye1[0] + eye1[2]) / 2, (eye1[1] + eye1[3]) / 2]
@@ -150,6 +151,16 @@ def transform_base_on_eye_pairs(region_image, region_skin_image, eye_pairs,
 		if (direction[0] < 0):
 			angleToRotate = -angleToRotate
 
+		tempImage = region_image.copy()
+		tempSkinImage = region_skin_image.copy()
+
+		mat = cv2.GetRotationMatrix(pivot, angleToRotate, 1.0)
+		tempImage = cv2.warpAffine(tempImage, mat, tempImage.shape[1::-1])
+		tempSkinImage = cv2.warpAffine(tempSkinImage, mat, tempImage.shape[1::-1])
+
+		count += 1
+		cv2.imwrite((directory + "/hello%s.jpg") % count, tempImage)
+		cv2.imwrite((directory + "/skin%s.jpg") % count, tempSkinImage)
 
 def get_possible_face_regions(image):
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)
@@ -157,47 +168,55 @@ def get_possible_face_regions(image):
 		print("something wrong 0")
 		return
 
+	print('hello1')
 	r, g = ut.normalize_rgb(image, m, n, tempX, tempY)
+	print('hello2')
 	h, s, v = ut.convert_rgb_to_hsv(image, m, n, tempX, tempY)	
  
+	print('hello3')
 	skinMap = build_binary_skin_map(image, r, g, h, s, v, m, n, tempX, tempY)
+	print('hello4')
 	ut.filter_with_binary_median_filter(skinMap, m, n, tempX, tempY)
 
 	regionInfo = [['hello world']]
 	# kernel = np.ones((3,3))
 	# skinMap = cv2.morphologyEx(skinMap, cv2.MORPH_OPEN, kernel)
+	print('hello5')
 	ut.transform_with_open_operator(skinMap, regionInfo, m, n, tempX, tempY)	
 
+	print('hello6')
 	regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, 
 		area_size = (40, 40), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4)
 
+	print(len(regionInfo))
+	print('hello7')
 	result = []	
-	for region in regionInfo:
-		tempImage = skinMap[region[0]:region[2], region[1]:region[3]]
-		m, n, tempX, tempY = ut.get_size_and_ranges(tempImage)
+	# for region in regionInfo:
+	# 	tempImage = skinMap[region[0]:region[2], region[1]:region[3]]
+	# 	m, n, tempX, tempY = ut.get_size_and_ranges(tempImage)
 
-		#tempImage values have been reversed
-		eyePairs = get_eye_pairs(tempImage)
+	# 	#tempImage values have been reversed
+	# 	eyePairs = get_eye_pairs(tempImage, m, n, tempX, tempY)
 
-		if (len(eyePairs) > 0):
-			result.append(region)		
-	regionInfo = result
+	# 	if (len(eyePairs) > 0):
+	# 		result.append(region)		
+	# regionInfo = result
 
 	#display image to check the bounding box
-	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-	# image[:, :] = skinMap[:, :] * 255
+	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
+	image[:, :] = skinMap[:, :] * 255
 	
-	image = image.astype(np.uint8)
-	temp = len(regionInfo)
-	if (temp > 0):
-		for i in range(0, temp):
-			cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
+	# image = image.astype(np.uint8)
+	# temp = len(regionInfo)
+	# if (temp > 0):
+	# 	for i in range(0, temp):
+	# 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
 	cv2.imshow('friend', image)
 	cv2.waitKey(0)
 	cv2.destroyWindow('friend')
 
 	#divide image and save it to database
-	#ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/gray%s.jpg")
+	ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/development/hello%s.jpg")
 
 
