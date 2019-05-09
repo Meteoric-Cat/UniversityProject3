@@ -222,7 +222,7 @@ def scan_region(image, steps, m, n, i, j, region_value, region_info, temp):
 		if (0 <= valuex < m):
 			if (0 <= valuey < n):
 				if (steps[valuex, valuey] == 0):
-					if (image[valuex, valuey] < 125):
+					if (image[valuex, valuey] == region_value):
 						scan_region(image, steps, m, n, valuex, valuey, region_value, region_info, temp)
 
 def split_image_into_images(image, region_info, directory = "face_database/%s.jpg"):
@@ -237,3 +237,8 @@ def find_angle_between_two_vectors(vector1, vector2):
 	v2dist = sqrt(vector2[0]**2 + vecotr2[1]**2)
 
 	return acos((vector1[0] * vector2[0] + vector1[1] * vector2[1]) / (v1dist * v2dist)) * 180 / pi
+
+def reverse_binary_image(image, m, n, tempX, tempY):
+	for i in tempX:
+		for j in tempY:
+			image[i, j] = 0 if (image[i, j] == 1) else 1
