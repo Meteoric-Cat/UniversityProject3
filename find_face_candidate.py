@@ -23,7 +23,8 @@ def build_binary_skin_map(image, r, g, h, s, v, height = None, width = None, tem
 
 	return result
 
-def get_useful_regions_base_on_ratio(image, region_list, area_size = (30, 30), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4):
+def get_useful_regions_base_on_ratio(image, region_list, 
+		area_size = (30, 30), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4):
 	temp = range(1, len(region_list))
 	result = []
 	width = height = 0
@@ -86,13 +87,11 @@ def match_eyes(image, m, n, possible_eye_info, pair_size_error = 5, dist_ratio =
 					dist = abs(centroid2y - centroid1y)
 
 					if ((dist / n) <= dist_ratio[1]):
-						result.append(possible_eye_info[i])
-						result.append(possible_eye_info[j])		
+						result.append([possible_eye_info[i], possible_eye_info[j]])
 						#return result				
 	return result
 
-def check_and_transform_region(region_skin_image):
-	m, n, tempX, tempY = ut.get_size_and_ranges(region_skin_image)
+def get_eye_pairs(region_skin_image, m, n, tempX, tempY):
 	eyeBlockInfo = [["hello"]]	
 
 	ut.reverse_binary_image(region_skin_image, m, n, tempX, tempY)
@@ -100,13 +99,56 @@ def check_and_transform_region(region_skin_image):
 	
 	eyeBlockInfo = []
 	find_possible_eye_blocks(region_skin_image, m, n, tempX, tempY, eyeBlockInfo)
-
 	eyeBlockInfo = match_eyes(region_skin_image, m, n, eyeBlockInfo)
+
 	print(eyeBlockInfo)
-	if (len(eyeBlockInfo) == 0):
-		return False
- 
-	return True
+	return eyeBlockInfo
+
+def find_longest_border(region_skin_image, m, n, tempX, tempY):
+	'''the longest border is also the border of the face in this region'''
+	result = []
+	steps = np.zeros[(m, n)]
+	temp1 = range(0, 4)
+	temp2 = range(0, 9)
+
+	for i in tempX:
+		for j in tempY:
+			if (ut.check_binary_border(region_skin_image, m, n, i, j, temp1)):
+				if (region_skin_image[i, j] == 0):
+					if (steps[i, j] == 0):
+						border = []
+						ut.find_binary_border(region_skin_image, steps, m, n, i, j, border, 0, temp2, temp1)
+						if (len(border) > len(result)):
+							result = border 
+	return result
+
+def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2, pivot):
+	'''based on nose and mouth'''
+	line = ut.find_line(eye1, eye2)
+	
+	farthestPoint = ut.find_the_farthest_point(line, border)
+	specialVector = [farthestPoint[0] - point[0], farthestPoint[1] - point[1]]
+
+	perpendicularVector = [eye1[1] - eye2[1], eye2[0] - eye1[0]]
+	if (ut.find_angle_between_two_vectors(perpendicularVector, specialVector) < 90):
+		return perpendicularVector
+	return [eye2[1] - eye1[1], eye1[0] - eye2[0]]
+
+def transform_base_on_eye_pairs(region_image, region_skin_image, eye_pairs,
+		m, n, tempX, tempY):
+	faceBorder = find_longest_border(region_skin_image, m, n, tempX, tempY)
+	downVector = [0, -1]
+
+	for eye1, eye2 in eye_pairs:
+		centroid1 = [(eye1[0] + eye1[2]) / 2, (eye1[1] + eye1[3]) / 2]
+		centroid2 = [(eye2[0] + eye2[2]) / 2, (eye2[1] + eye2[3]) / 2]
+
+		pivot = [(centroid1[0] + centroid2[0]) / 2, (centroid1[1] + centroid2[1]) / 2]
+
+		direction = get_face_direction(region_skin_image, m, n, tempX, tempY, faceBorder, centroid1, centroid2, pivot)
+		angleToRotate = ut.find_angle_between_two_vectors(downVector, direction)
+		if (direction[0] < 0):
+			angleToRotate = -angleToRotate
 
 
 def get_possible_face_regions(image):
@@ -126,12 +168,18 @@ def get_possible_face_regions(image):
 	# skinMap = cv2.morphologyEx(skinMap, cv2.MORPH_OPEN, kernel)
 	ut.transform_with_open_operator(skinMap, regionInfo, m, n, tempX, tempY)	
 
-	regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, area_size = (40, 40), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4)
+	regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, 
+		area_size = (40, 40), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4)
 
 	result = []	
 	for region in regionInfo:
 		tempImage = skinMap[region[0]:region[2], region[1]:region[3]]
-		if (check_and_transform_region(tempImage) == True):
+		m, n, tempX, tempY = ut.get_size_and_ranges(tempImage)
+
+		#tempImage values have been reversed
+		eyePairs = get_eye_pairs(tempImage)
+
+		if (len(eyePairs) > 0):
 			result.append(region)		
 	regionInfo = result
 

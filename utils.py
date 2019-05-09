@@ -234,7 +234,7 @@ def split_image_into_images(image, region_info, directory = "face_database/%s.jp
 
 def find_angle_between_two_vectors(vector1, vector2):
 	v1dist = sqrt(vector1[0]**2 + vector1[1]**2)
-	v2dist = sqrt(vector2[0]**2 + vecotr2[1]**2)
+	v2dist = sqrt(vector2[0]**2 + vector2[1]**2)
 
 	return acos((vector1[0] * vector2[0] + vector1[1] * vector2[1]) / (v1dist * v2dist)) * 180 / pi
 
@@ -242,3 +242,47 @@ def reverse_binary_image(image, m, n, tempX, tempY):
 	for i in tempX:
 		for j in tempY:
 			image[i, j] = 0 if (image[i, j] == 1) else 1
+
+def check_binary_border(image, m, n, i, j, temp):
+	if (i == 0 or i == m - 1):
+		return True
+	if (j == 0 or j == n - 1):
+		return True
+
+	for k in temp:
+		if (image[i, j] != image[i + STEPX[k], j + STEPY[k]]):
+			return True
+
+	return False 
+
+def find_binary_border(image, steps, m, n, i, j, border, border_value, temp, temp1):
+	steps[i, j] = 1
+	border.append([i, j])
+
+	for k in temp:
+		valuex = i + ROUNDX
+		valuey = j + ROUNDY
+
+		if (0 <= valuex < m):
+			if (0 <= valuey < n):
+				if (image[valuex, valuey] == border_value):
+					if (steps[valuex, valuey] == 0):
+						if (check_binary_border(image, m, n, valuex, valuey, temp1)):
+							find_binary_border(image, steps, m, n, valuex, valuey, border, border_value, temp, temp1)
+
+def find_line(x, y):
+	'''a, b, c of the line ax + by + c = 0 that contains 2 specified points'''
+	return [y[1] - x[1], x[0] - y[0], x[1] * (y[0] - x[0]) - x[0] * (y[1] - x[1])]
+
+def find_the_farthest_point(line, point_list):
+	maxDist = 0
+	result = None
+	temp = sqrt(line[0]**2 + line[1]**2)
+
+	for point in point_list:
+		dist = abs(line[0] * point[0] + line[1] * point[1] + line[2]) / temp
+		if (dist > maxDist):
+			maxDist = dist
+			result = point
+
+	return result
