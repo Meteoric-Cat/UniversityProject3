@@ -3,28 +3,36 @@ import cv2
 import utils as ut 
 import numpy as np
 
-from math import acos, pi
+from math import acos, pi, sqrt
 
-
-def build_binary_skin_map(image, r, g, h, s, v, height = None, width = None, tempX = None, tempY = None):
-	if (height == None):
-		height, width, tempX, tempY = ut.get_size_and_ranges(image)
-		if (height == -1):
-			print("something wrong 3")			
-			return
-
-	result = np.zeros((height, width))
+def build_binary_skin_map(image, m, n, tempX, tempY):
+	result = np.zeros((m, n))
 
 	for i in tempX:
 		for j in tempY:
-			if ((image[i, j, 0] > image[i, j, 1]) and (abs(image[i, j, 0] - image[i, j, 1]) >= 11)):
-				if ((0.33 <= r[i, j] <= 0.6) and (0.25 <= g[i, j] <= 0.37)):
-					if ((340 <= h[i, j] <= 359) or (0 <= h[i, j] <= 50)):
-						if (0.12 <= s[i, j] <= 0.7):						
-							if (0.3 <= v[i, j] <= 1.0):
-								result[i, j] = 1
+			y = 16 + 65.481 * image[i, j, 0] + 128.553 * image[i, j, 1] + 24.966 * image[i, j, 2]
+			cg = 128 + (-81.085 * image[i, j, 0]) + 112 * image[i, j, 1] + (-30.915 * image[i, j, 2])
+			cr = 128 + 112 * image[i, j, 0] + (-93.786 * image[i, j, 1]) + (-18.214 * image[i, j, 2])
 
-	return result
+			temp = sqrt((image[i, j, 0] - image[i, j, 1])**2 + 
+				(image[i, j, 0] - image[i, j, 2]) * (image[i, j, 1] - image[i, j, 2]))
+			if (temp == 0):
+				temp = 1
+			h = acos(0.5 * (2 * image[i, j, 0] - image[i, j, 1] - image[i, j, 2]) / temp) 
+
+			temp = image[i, j, 0] + image[i, j, 1] + image[i, j, 2]
+			if (temp == 0):
+				temp = 3
+			s = 1 - 3 * min(image[i, j, 0], image[i, j, 1], image[i, j, 2]) / temp
+			v = (1 / 3) * temp
+
+			if (y > 80):
+				if (100 < cg < 130):
+					if (135 < cr < 175):
+						#if (0.05 < h < 0.9412):
+						result[i, j] = 1
+	return result	
+
 
 def get_useful_regions_base_on_ratio(image, region_list, 
 		area_size = (30, 30), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4):
@@ -172,27 +180,18 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 		return
 
 	#ut.balance_color(image, m, n, tempX, tempY)
-	image = ut.white_balance(image)
-	image = ut.white_balance(image)
-	image = ut.white_balance(image)
-	image = image.astype(np.float)
-	print('hello1')
-	r, g = ut.normalize_rgb(image, m, n, tempX, tempY)
-	print('hello2')
-	h, s, v = ut.convert_rgb_to_hsv(image, m, n, tempX, tempY)	
- 
-	print('hello3')
-	skinMap = build_binary_skin_map(image, r, g, h, s, v, m, n, tempX, tempY)
-	print('hello4')
-	#ut.filter_with_binary_median_filter(skinMap, m, n, tempX, tempY)
+	image = ut.white_balance(image).astype(np.float)
+	skinMap = build_binary_skin_map(image, m, n, tempX, tempY)
+	# print('hello1')
+	# ut.filter_with_binary_median_filter(skinMap, m, n, tempX, tempY)
 
-	regionInfo = [['hello world']]
-	kernel = np.ones((3,3))
-	skinMap = cv2.morphologyEx(skinMap, cv2.MORPH_OPEN, kernel)
-	print('hello5')
-	#ut.transform_with_open_operator(skinMap, regionInfo, m, n, tempX, tempY)	
+	# regionInfo = [['hello world']]
+	# # kernel = np.ones((3,3))
+	# # skinMap = cv2.morphologyEx(skinMap, cv2.MORPH_OPEN, kernel)
+	# print('hello2')
+	# ut.transform_with_open_operator(skinMap, regionInfo, m, n, tempX, tempY)	
 
-	print('hello6')
+	# print('hello3')
 	# regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, 
 	# 	area_size = (40, 40), aspect_ratio = (0.2, 4.6), occupancy_ratio = 0.2)
 	# print(len(regionInfo))
@@ -215,7 +214,6 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
 	image[:, :] = skinMap[:, :] * 255
 	
-	#ut.convert_between_bgr_and_rgb(image, m, n, tempX, tempY)
 	image = image.astype(np.uint8)
 	# temp = len(regionInfo)
 	# if (temp > 0):

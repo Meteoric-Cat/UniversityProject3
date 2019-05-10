@@ -1,11 +1,58 @@
 import numpy as np
 import cv2
 from math import acos, pi, sqrt
+from collection import deque
 
 ROUNDX = [-1, -1, -1, 0, 0, 0, 1, 1, 1]
 ROUNDY = [-1, 0, 1, -1, 0, 1, -1, 0, 1]
 STEPX = [-1, 0, 0, 1]
 STEPY = [0, -1, 1, 0]
+
+def convert_between_bgr_and_rgb(image, m, n, tempX, tempY):
+	for i in tempX:
+		for j in tempY:
+			temp = image[i, j, 0]
+			image[i, j, 0] = image[i, j, 2]
+			image[i, j, 2] = temp			
+
+def balance_color(image, m, n, tempX, tempY):
+	sumRed = 0
+	sumGreen = 0
+	sumBlue = 0
+
+	for i in tempX:
+		for j in tempY:
+			sumRed += image[i, j, 0]
+			sumGreen += image[i, j, 1]
+			sumBlue += image[i, j, 2]
+
+	sumRed = sumRed / (m * n)
+	sumGreen = sumGreen / (m * n)
+	sumBlue = sumBlue / (m * n)
+
+	tempSum = sumRed + sumBlue + sumGreen
+	tempRed = tempSum / (3 * sumRed)
+	tempGreen = tempSum / (3 * sumGreen)
+	tempBlue = tempSum / (3 * sumBlue)
+
+	for i in tempX:
+		for j in tempY:
+			image[i, j, 0] = image[i, j, 0] * tempRed
+			image[i, j, 1] = image[i, j, 1] * tempGreen
+			image[i, j, 2] = image[i, j, 2] *  tempBlue
+
+def white_balance(image):
+	image = image.astype(np.uint8)
+	result = cv2.cvtColor(image, cv2.COLOR_RGB2LAB)
+	
+	avgAChannel = np.average(result[:, :, 1])
+	avgBChannel = np.average(result[:, :, 2])
+
+	result[:, :, 1] = result[:, :, 1] - ((avgAChannel - 128) * (result[:, :, 0] / 255.0) * 1.1)
+	result[:, :, 2] = result[:, :, 2] - ((avgBChannel - 128) * (result[:, :, 0] / 255.0) * 1.1)
+
+	result = cv2.cvtColor(result, cv2.COLOR_LAB2RGB)
+	return result
 
 def get_size_and_ranges(image):
 	if (len(image.shape) == 3):
@@ -193,6 +240,44 @@ def transform_with_open_operator(image, region_info, m = None, n = None, tempX =
 				image[i, j] = 0
 			else:
 				image[i, j] = 1
+
+def get_connected_regions(image, m, n, tempX, tempY, region_info, region_value):	
+	steps = np.zeros((m, n))
+	temp = range(0, 4)
+	pixels = deque()
+
+	for i in tempX:
+		for j in tempY:
+			if (image[i, j] == region_value):
+				if (steps[i, j] == 0):
+					region = [i, j, i, j, 1]
+					pixels.append([i, j])					
+					count = 1
+
+					while (count > 0):
+						count -= 1
+						current = pixels.popleft()
+						steps[current[0], current[1]] = 1
+
+						#update region information
+						region[4] += 1
+						region[0] = min(current[0], region[0])
+						region[1] = min(current[1], region[1])
+						region[2] = max(current[0], region[2])
+						region[3] = max(current[1], region[3])
+
+						for k in temp:
+							valuex = current[0] + STEPX[k] 
+							valuey = current[1] + STEPY[k]
+
+							if (0 <= valuex < m):
+								if (0 <= valuey < n):
+									if (image[valuex, valuey] == region_value):
+										if (steps[valuex, valuey] == 0):
+											count += 1
+											pixels.append([valuex, valuey])
+
+					region_info(region)
 
 def count_useful_pixels(image, region):
 	tempX = range(region[0], region[2])
