@@ -1,7 +1,7 @@
 from sys import setrecursionlimit
 
 import cv2
-import find_face_candidate3 as ffc 
+import find_face_candidate as ffc 
 import numpy as np
 import gc
 import utils as ut
@@ -10,9 +10,9 @@ if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
 	#imageName = input("Input name of the image:")
-	imageName = './friend5.jpg'
+	imageName = './friend9.jpg'
 	image = cv2.imread(imageName)
-	image = cv2.resize(image, dsize = None, fx = 1, fy = 1)
+	image = cv2.resize(image, dsize = None, fx = 1.0, fy = 1.0)
 
 	#convert channel color
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)
