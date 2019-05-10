@@ -226,26 +226,6 @@ def count_useful_pixels(image, region):
 
 	return count
 
-def scan_region(image, steps, m, n, i, j, region_value, region_info, temp):	
-	steps[i, j] = 1
-	region_info[4] += 1
-
-	region_info[0] = min(i, region_info[0])
-	region_info[1] = min(j, region_info[1])
-
-	region_info[2] = max(i, region_info[2])
-	region_info[3] = max(j, region_info[3])
-
-	for k in temp:
-		valuex = i + STEPX[k]
-		valuey = j + STEPY[k]
-
-		if (0 <= valuex < m):
-			if (0 <= valuey < n):
-				if (steps[valuex, valuey] == 0):
-					if (image[valuex, valuey] == region_value):
-						scan_region(image, steps, m, n, valuex, valuey, region_value, region_info, temp)
-
 def split_image_into_images(image, region_info, directory = "face_database/%s.jpg"):
 	temp = range(0, len(region_info))
 
@@ -282,8 +262,8 @@ def find_binary_border(image, steps, m, n, i, j, border, border_value, temp, tem
 	border.append([i, j])
 
 	for k in temp:
-		valuex = i + ROUNDX
-		valuey = j + ROUNDY
+		valuex = i + ROUNDX[k]
+		valuey = j + ROUNDY[k]
 
 		if (0 <= valuex < m):
 			if (0 <= valuey < n):
@@ -296,15 +276,22 @@ def find_line(x, y):
 	'''a, b, c of the line ax + by + c = 0 that contains 2 specified points'''
 	return [y[1] - x[1], x[0] - y[0], x[1] * (y[0] - x[0]) - x[0] * (y[1] - x[1])]
 
-def find_the_farthest_point(line, point_list):
+def find_the_farthest_point(line, point_list, mode = 1):
 	maxDist = 0
 	result = None
 	temp = sqrt(line[0]**2 + line[1]**2)
 
-	for point in point_list:
-		dist = abs(line[0] * point[0] + line[1] * point[1] + line[2]) / temp
-		if (dist > maxDist):
-			maxDist = dist
-			result = point
-
+	if (mode == 2):
+		for point in point_list:
+			dist = abs(line[0] * point[1] + line[1] * point[0] + line[2]) / temp
+			if (dist > maxDist):
+				maxDist = dist
+				result = point
+	else:
+		for point in point_list:
+			dist = abs(line[0] * point[0] + line[1] * point[1] + line[2]) / temp 
+			if (dist > maxDist):
+				maxDist = dist
+				result = point
+				
 	return result

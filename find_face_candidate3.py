@@ -141,7 +141,8 @@ def get_eye_pairs(region_skin_image, m, n, tempX, tempY):
 	return eyeBlockInfo
 
 def find_longest_border(region_skin_image, m, n, tempX, tempY):
-	'''the longest border is also the border of the face in this region'''
+	'''the longest border is also the border of the face in this region
+	each point in the border is save with the form of [row, col]'''
 	result = []
 	steps = np.zeros((m, n))
 	temp1 = range(0, 4)
@@ -162,8 +163,9 @@ def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2
 	'''based on nose and mouth'''
 	line = ut.find_line(eye1, eye2)
 	
-	farthestPoint = ut.find_the_farthest_point(line, border)
-	specialVector = [farthestPoint[0] - pivot[0], farthestPoint[1] - pivot[1]]
+	farthestPoint = ut.find_the_farthest_point(line, border, mode = 2)
+	#border point is saved in the form of [row, col] when pivot is in the form of [col, row]
+	specialVector = [farthestPoint[1] - pivot[0], farthestPoint[0] - pivot[1]]
 
 	perpendicularVector = [eye1[1] - eye2[1], eye2[0] - eye1[0]]
 	if (ut.find_angle_between_two_vectors(perpendicularVector, specialVector) < 90):
@@ -177,8 +179,8 @@ def transform_base_on_eye_pairs(region_image, region_skin_image, eye_pairs,
 	count = 0
 
 	for eye1, eye2 in eye_pairs:
-		centroid1 = [(eye1[0] + eye1[2]) / 2, (eye1[1] + eye1[3]) / 2]
-		centroid2 = [(eye2[0] + eye2[2]) / 2, (eye2[1] + eye2[3]) / 2]
+		centroid1 = [(eye1[1] + eye1[3]) / 2, (eye1[0] + eye1[2]) / 2]
+		centroid2 = [(eye2[1] + eye2[3]) / 2, (eye2[0] + eye2[2]) / 2]
 
 		pivot = ((centroid1[0] + centroid2[0]) / 2, (centroid1[1] + centroid2[1]) / 2)
 
@@ -186,7 +188,7 @@ def transform_base_on_eye_pairs(region_image, region_skin_image, eye_pairs,
 		angleToRotate = ut.find_angle_between_two_vectors(downVector, direction)
 		print(count + 1, angleToRotate) 
 		print(direction)
-		if (direction[0] < 0):
+		if (direction[0] > 0):
 			angleToRotate = -angleToRotate
 
 		tempImage = region_image.copy()
@@ -256,9 +258,9 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 			result.append(region)
 			personID += 1
 			directory = "face_database/person%s" % personID
-			print(directory)
+			#print(directory)
 			transform_base_on_eye_pairs(tempImage, tempSkinImage, eyePairs, m, n, tempX, tempY, directory)	
-			return
+			
 	regionInfo = result
 
 	#display image to check the bounding box
