@@ -214,24 +214,24 @@ def get_connected_regions(image, m, n, tempX, tempY, region_info, region_value):
 
 					region_info.append(region)
 
-def count_useful_pixels(image, region):
-	tempX = range(region[0], region[2])
-	tempY = range(region[1], region[3])
+# def count_useful_pixels(image, region):
+# 	tempX = range(region[0], region[2])
+# 	tempY = range(region[1], region[3])
 
-	count = 0
-	for i in tempX:
-		for j in tempY:
-			if (image[i, j] != 0):
-				count += 1
+# 	count = 0
+# 	for i in tempX:
+# 		for j in tempY:
+# 			if (image[i, j] != 0):
+# 				count += 1
 
-	return count
+# 	return count
 
-def split_image_into_images(image, region_info, directory = "face_database/%s.jpg"):
-	temp = range(0, len(region_info))
+# def split_image_into_images(image, region_info, directory = "face_database/%s.jpg"):
+# 	temp = range(0, len(region_info))
 
-	for i in temp:
-		subImage = image[region_info[i][0] : region_info[i][2], region_info[i][1] : region_info[i][3]]		
-		cv2.imwrite(directory % i, subImage)
+# 	for i in temp:
+# 		subImage = image[region_info[i][0] : region_info[i][2], region_info[i][1] : region_info[i][3]]		
+# 		cv2.imwrite(directory % i, subImage)
 
 def find_angle_between_two_vectors(vector1, vector2):
 	v1dist = sqrt(vector1[0]**2 + vector1[1]**2)
@@ -276,6 +276,9 @@ def find_line(x, y):
 	'''a, b, c of the line ax + by + c = 0 that contains 2 specified points'''
 	return [y[1] - x[1], x[0] - y[0], x[1] * (y[0] - x[0]) - x[0] * (y[1] - x[1])]
 
+def distance_between_points(x, y):
+	return sqrt((x[0] - y[0])**2 + (x[1] - y[1])**2)
+
 def find_the_farthest_point(line, point_list, mode = 1):
 	maxDist = 0
 	result = None
@@ -293,5 +296,6 @@ def find_the_farthest_point(line, point_list, mode = 1):
 			if (dist > maxDist):
 				maxDist = dist
 				result = point
-				
+
 	return result
+
