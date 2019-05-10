@@ -28,12 +28,10 @@ def build_binary_skin_map(image, r, g, h, s, v, height = None, width = None, tem
 
 def get_useful_regions_base_on_ratio(image, region_list, 
 		area_size = (30, 30), aspect_ratio = (0.8, 2.6), occupancy_ratio = 0.4):
-	temp = range(1, len(region_list))
 	result = []
 	width = height = 0
 	
-	for i in temp:
-		region = region_list[i]
+	for region in region_list:
 		#print(region)
 		width = region[3] - region[1]
 		height = region[2] - region[0]
@@ -51,22 +49,20 @@ def find_possible_eye_blocks(image, m, n, tempX, tempY, possible_eye_info,
 	steps = np.zeros((m, n))	
 	temp = range(0, 4)
 
-	for i in tempX:
-		for j in tempY:
-			if (steps[i, j] == 0):
-				if (image[i, j] == 0):
-					regionInfo = [i, j, i, j, 0]					
-					ut.scan_region(image, steps, m, n, i, j, 1, regionInfo, temp)
+	result = []
 
-					height = abs(regionInfo[0] - regionInfo[2])
-					width = abs(regionInfo[1] - regionInfo[3])
-					if (width * height == 0):
-						continue
+	for regionInfo in possible_eye_info:
+		height = abs(regionInfo[0] - regionInfo[2])
+		width = abs(regionInfo[1] - regionInfo[3])
+		if (width * height == 0):
+			continue
 
-					if (aspect_ratio[0] <= (height / width) <= aspect_ratio[1]):
-						if (occupancy_ratio <= (regionInfo[4] / (width * height))):
-							if (width_ratio[0] <= (width / n) <= width_ratio[1]):
-								possible_eye_info.append(regionInfo)
+		if (aspect_ratio[0] <= (height / width) <= aspect_ratio[1]):
+			if (occupancy_ratio <= (regionInfo[4] / (width * height))):
+				if (width_ratio[0] <= (width / n) <= width_ratio[1]):
+					result.append(regionInfo)
+
+	return result
 
 def match_eyes(image, m, n, possible_eye_info, pair_size_error = 5, dist_ratio = (0.2, 0.65)):
 	infoLength = len(possible_eye_info)
@@ -98,11 +94,12 @@ def get_eye_pairs(region_skin_image, m, n, tempX, tempY):
 	eyeBlockInfo = [["hello"]]	
 
 	ut.reverse_binary_image(region_skin_image, m, n, tempX, tempY)	
-	ut.transform_with_open_operator(region_skin_image, eyeBlockInfo, m, n, tempX, tempY)	
+	kernel = np.ones((3, 3))
+	region_skin_image = cv2.morphologyEx(region_skin_image, cv2.MORPH_OPEN, kernel)	
 	
 	eyeBlockInfo = []
-	find_possible_eye_blocks(region_skin_image, m, n, tempX, tempY, eyeBlockInfo, width_ratio = (0.02, 0.4))	
-	#print(eyeBlockInfo)
+	ut.get_connected_regions(region_skin_image, m, n, tempX, tempY, eyeBlockInfo, 1)
+	eyeBlockInfo = find_possible_eye_blocks(region_skin_image, m, n, tempX, tempY, eyeBlockInfo, width_ratio = (0.02, 0.4))	
 	eyeBlockInfo = match_eyes(region_skin_image, m, n, eyeBlockInfo, dist_ratio = (0, 0.65))
 
 	print(eyeBlockInfo)
@@ -176,6 +173,7 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 	image = ut.white_balance(image)
 	image = ut.white_balance(image)
 	image = image.astype(np.float)
+
 	print('hello1')
 	r, g = ut.normalize_rgb(image, m, n, tempX, tempY)
 	print('hello2')
@@ -186,41 +184,39 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 	print('hello4')
 	#ut.filter_with_binary_median_filter(skinMap, m, n, tempX, tempY)
 
-	regionInfo = [['hello world']]
+	regionInfo = []
 	kernel = np.ones((3,3))
 	skinMap = cv2.morphologyEx(skinMap, cv2.MORPH_OPEN, kernel)
 	print('hello5')
-	#ut.transform_with_open_operator(skinMap, regionInfo, m, n, tempX, tempY)	
+	ut.get_connected_regions(skinMap, m, n, tempX, tempY, regionInfo, 1)
 
 	print('hello6')
-	# regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, 
-	# 	area_size = (40, 40), aspect_ratio = (0.2, 4.6), occupancy_ratio = 0.2)
-	# print(len(regionInfo))
+	regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, 
+		area_size = (40, 40), aspect_ratio = (0.2, 4.6), occupancy_ratio = 0.2)
 
-	# result = []	
-	# for region in regionInfo:
-	# 	tempImage = skinMap[region[0]:region[2], region[1]:region[3]]
-	# 	m, n, tempX, tempY = ut.get_size_and_ranges(tempImage)
+	print('hello7')
+	result = []	
+	for region in regionInfo:
+		tempImage = skinMap[region[0]:region[2], region[1]:region[3]]
+		m, n, tempX, tempY = ut.get_size_and_ranges(tempImage)
 
-	# 	#tempImage values have been reversed
-	# 	print('hello')
-	# 	eyePairs = get_eye_pairs(tempImage, m, n, tempX, tempY)
+		#tempImage values have been reversed
+		eyePairs = get_eye_pairs(tempImage, m, n, tempX, tempY)
 
-	# 	if (len(eyePairs) > 0):
-	# 		result.append(region)		
-	# regionInfo = result
-	# print(len(regionInfo))
+		if (len(eyePairs) > 0):
+			result.append(region)		
+	regionInfo = result
 
 	#display image to check the bounding box
-	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-	image[:, :] = skinMap[:, :] * 255
+	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
+	# image[:, :] = skinMap[:, :] * 255
 	
 	#ut.convert_between_bgr_and_rgb(image, m, n, tempX, tempY)
 	image = image.astype(np.uint8)
-	# temp = len(regionInfo)
-	# if (temp > 0):
-	# 	for i in range(0, temp):
-	# 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
+	temp = len(regionInfo)
+	if (temp > 0):
+		for i in range(0, temp):
+			cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
 	cv2.imshow('friend', image)
 	cv2.waitKey(0)

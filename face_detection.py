@@ -10,7 +10,7 @@ if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
 	#imageName = input("Input name of the image:")
-	imageName = './friend7.jpg'
+	imageName = './friend3.jpg'
 	image = cv2.imread(imageName)
 	image = cv2.resize(image, dsize = None, fx = 1, fy = 1).astype(np.float)
 

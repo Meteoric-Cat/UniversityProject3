@@ -228,3 +228,83 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 	# ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/development/hello%s.jpg")
 
 
+def scan_useful_region(image, m, n, steps, region_info, regionCount, i, j, temp, temp1):
+	# if (steps[i, j] != 0):
+	# 	return
+
+	for k in temp:
+		if (image[i + ROUNDX[k], j + ROUNDY[k]] == 0):
+			return 
+	steps[i, j] = regionCount
+	region_info[regionCount][4] += 1
+	for k in temp:
+		image[i + ROUNDX[k], j + ROUNDY[k]] += 1
+
+	#if (i <= region_info[regionCount][0]):
+	region_info[regionCount][0] = min(i, region_info[regionCount][0])
+	region_info[regionCount][1] = min(j, region_info[regionCount][1])
+	#else:
+	#if (i >= region_info[regionCount][2]):
+	region_info[regionCount][2] = max(i, region_info[regionCount][2])
+	region_info[regionCount][3] = max(j, region_info[regionCount][3])
+
+	# for k in temp1:
+	# 	if (0 < i + STEPX[k] < m):
+	# 		if (0 < j + STEPY[k] < n):				
+	# 			scan_useful_region(image, m, n, steps, region_info, regionCount, i + STEPX[k], j + STEPY[k], temp, temp1)
+
+	for k in temp1:
+		valuex = i + STEPX[k]
+		valuey = j + STEPY[k]
+
+		if (0 < valuex < m):
+			if (0 < valuey < n):
+				if (steps[valuex, valuey] == 0):
+					scan_useful_region(image, m, n, steps, region_info, regionCount, valuex, valuey, temp, temp1)
+
+def transform_with_open_operator(image, region_info, m = None, n = None, tempX = None, tempY = None, filter_size = 3):
+	if (filter_size != 3):
+		print('this filter has not been supported')
+		return
+
+	if (m == None):
+		m, n, tempX, tempY = get_size_and_ranges(image)
+		if (m == -1):
+			print('something wrong 5')
+			return
+
+	if (region_info == None):
+		print('something wrong 6')
+		return
+
+	temp = range(0, 9)
+	temp1 = range(0, 4)
+	regionCount = 0
+	steps = np.zeros((m, n))
+	tempX = range(1, m - 1)
+	tempY = range(1, n - 1)
+	surround = True
+
+	for i in tempX:
+		for j in tempY:
+			if (image[i, j] == 1):
+				if (steps[i, j] == 0):
+					surround = True
+					for k in temp:
+						if (0 <= i + ROUNDX[k] < m):
+							if (0 <= j + ROUNDY[k] < n):
+								if (image[i + ROUNDX[k], j + ROUNDY[k]] != 1):
+									surround = False
+									break
+					if (surround):
+						regionCount += 1
+						region_info.append([i, j, i, j, 0])
+
+						scan_useful_region(image, m - 1, n - 1, steps, region_info, regionCount, i, j, temp, temp1)
+
+	for i in tempX:
+		for j in tempY:
+			if (image[i, j] <= 1):
+				image[i, j] = 0
+			else:
+				image[i, j] = 1
