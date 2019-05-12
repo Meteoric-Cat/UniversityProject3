@@ -208,8 +208,8 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 		print("something wrong 0")
 		return
 
-	#ut.balance_color(image, m, n, tempX, tempY)
-	#image = ut.white_balance(image)
+	# ut.balance_color(image, m, n, tempX, tempY)
+	# image = ut.white_balance(image)
 	# image = ut.white_balance(image)
 	# image = ut.white_balance(image)
 	# image = ut.white_balance(image)

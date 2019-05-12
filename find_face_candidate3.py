@@ -173,7 +173,7 @@ def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs
 	faceBorder = find_longest_border(region_skin_image, m, n, tempX, tempY)
 	downVector = [0, 1]
 	count = 0
-	tempDirectory = directory + "/hello%s.jpg"
+	tempDirectory = directory + "hello%s.jpg"
 
 	for eye1, eye2 in eye_pairs:
 		centroid1 = [(eye1[1] + eye1[3]) / 2, (eye1[0] + eye1[2]) / 2]

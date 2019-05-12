@@ -10,11 +10,16 @@ if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
 	#imageName = input("Input name of the image:")
-	imageName = './friend9.jpg'
+	imageName = './input/huy/huy4.jpg'
 	image = cv2.imread(imageName)
-	image = cv2.resize(image, dsize = None, fx = 1.0, fy = 1.0)
-
-	#convert channel color
+	#image = cv2.resize(image, dsize = None, fx = 1.0, fy = 1.0)
+	m, n, tempX, tempY = ut.get_size_and_ranges(image)
+	if (m > 1000 or n > 1000):
+		image = cv2.resize(image, dsize = None, fx = 0.7, fy = 0.7)
+		pass
+	else:
+		if (m > 2000 or n > 2000):
+			image = cv2.resize(image, dsize = None, fx = 0.4, fy = 0.4)
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)
 
 	#ut.convert_between_bgr_and_rgb(image, m, n, tempX, tempY)
