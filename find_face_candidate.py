@@ -243,7 +243,7 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 	# 	tempSkinImage = skinMap[region[0]:region[2], region[1]:region[3]]
 
 	# 	tempM, tempN, tempTempX, tempTempY = ut.get_size_and_ranges(tempSkinImage)
-
+	
 	# 	#tempImage values have been reversed
 	# 	eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
 
