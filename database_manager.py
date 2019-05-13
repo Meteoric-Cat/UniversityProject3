@@ -30,6 +30,18 @@ class SubspaceImage(Base):
 		ondelete='CASCADE'))
 	Owner = relationship("Person")
 
+	def get_weights_as_array(self, weight_count = 10):
+		values = self.Weights.split(' ')
+		temp = range(1, weight_count - 1)
+		result = []
+
+		result.append(float(values[0][1:]))
+		for i in temp:
+			result.append(float(values[i]))
+		result.append(float(values[weight_count - 1][:-1]))		
+
+		return result
+
 def create_tables():
 	Base.metadata.bind = engine	
 	Base.metadata.create_all()
@@ -60,6 +72,13 @@ def get_people_count():
 	session.close()
 	return result[0][0]
 
+def get_subspace_images(ids = None):
+	session = Session()
+	if (ids is None):
+		result = session.query(SubspaceImage).all()
+	session.close()
+	return result
+
 def create_people(*people):
 	'''each person data will be saved in the form of name, age, occupation'''	
 	session = Session()
@@ -71,6 +90,30 @@ def create_people(*people):
 	session.add(person)
 	session.commit()
 	session.close()
+
+def create_subspace_images(file_info, weights, remove = False):
+	if (remove):
+		delete_subspace_images(None)
+
+	Images = []
+	temp = range(0, len(file_info))
+
+	for i in temp:
+		Images.append(
+			SubspaceImage(Path = file_info[i][1], OnwerId = file_info[i][0], Weights = str(weights[i])))
+
+	session = Session()
+	session.add_all(Images)
+	session.commit()
+	session.close()
+
+def delete_subspace_images(ids):
+	if (ids == None):
+		session = Session()
+		session.execute('''TRUNCATE TABLE SubspaceImages''')
+		session.commit()
+		session.close()
+		return
 
 def clean_up():
 	engine.dispose()
