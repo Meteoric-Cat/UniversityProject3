@@ -6,11 +6,13 @@ import numpy as np
 import gc
 import utils as ut
 
+import database_manager as db 
+
 if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
 	#imageName = input("Input name of the image:")
-	imageName = './input/hai/hai8.jpg'
+	imageName = './input/hai/hai9.jpg'
 	image = cv2.imread(imageName)
 	#image = cv2.resize(image, dsize = None, fx = 1.0, fy = 1.0)
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)
@@ -26,4 +28,8 @@ if (__name__ == "__main__"):
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float)
 
 	ffc.get_possible_face_regions(image, m, n, tempX, tempY)
+
+	#cleaning 
+	db.clean_up()
 	gc.collect()
+

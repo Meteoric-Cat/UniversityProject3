@@ -153,7 +153,7 @@ def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2
 		return perpendicularVector
 	return [eye2[1] - eye1[1], eye1[0] - eye2[0]]
 
-def split_to_get_face(image, pivot, dist, directory, ratio = (-1.2, 1.8, -1.0, 1.0), output_size = OUTPUT_SIZE):
+def split_to_get_face(image, pivot, dist, file_output, ratio = (-1.2, 1.8, -1.0, 1.0), output_size = OUTPUT_SIZE):
 	m, n = image.shape
 
 	top = int(max(0, (pivot[1] + ratio[0] * dist)))
@@ -161,19 +161,41 @@ def split_to_get_face(image, pivot, dist, directory, ratio = (-1.2, 1.8, -1.0, 1
 	left = int(max(0, (pivot[0] + ratio[2] * dist)))
 	right = int(min(n - 1, (pivot[0] + ratio[3] * dist)))
 	
-	#print(pivot, dist)
-	# print(pivot[0] - 0.8 * dist, pivot[0] + 1.5 * dist, pivot[1] - dist, pivot[1] + dist)
-	#print(top, bottom, left, right)
 	tempImage = image[top:bottom, left:right]
 	tempImage = cv2.resize(tempImage, output_size)
-	cv2.imwrite(directory, tempImage)
+
+	if (file_output):
+		cv2.imshow("Facial image", tempImage)
+		check = input("Is it a facial image?(y/n)")
+		if (check != 'y'):
+			return
+
+		personID = int(input("Person ID:"))
+		peopleCount = len(db.get_people(personID))
+
+		if (peopleCount < personID):
+			check = input("This person's information doesn't exist. Create new one (y/n):")
+
+			if (check == 'y'):
+				name = input("Name:")
+				age = int(input("Age:"))
+				occupation = input("Occupation:")
+
+				db.create_people([name, age, occupation])
+				check = True
+				personID = peopleCount + 1
+			else
+				check = None
+		else check = False 
+
+		if not (check is None):
+			fm.write_facial_image_to_file(check, personID, tempImage)		
 
 def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs,
 		m, n, tempX, tempY, directory):
 	faceBorder = find_longest_border(region_skin_image, m, n, tempX, tempY)
 	downVector = [0, 1]
 	count = 0
-	tempDirectory = directory + "hello%s.jpg"
 
 	for eye1, eye2 in eye_pairs:
 		centroid1 = [(eye1[1] + eye1[3]) / 2, (eye1[0] + eye1[2]) / 2]
@@ -201,9 +223,9 @@ def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs
 		#print(tempImage[1,1,1])
 		count += 1
 		split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
-			directory = (tempDirectory % count))
+			file_output)
 
-def get_possible_face_regions(image, m, n, tempX, tempY):
+def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
 	if (m == -1):
 		print("something wrong 0")
 		return
@@ -235,8 +257,7 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 		area_size = (40, 40), aspect_ratio = (0.2, 4.6), occupancy_ratio = 0.2)
 
 	print('hello7')
-	result = []	
-	personID = 0
+	#result = []	
 	image = image.astype(np.uint8)
 	image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 	for region in regionInfo:
@@ -248,14 +269,10 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 		eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
 
 		if (len(eyePairs) > 0):
-			result.append(region)
-			personID += 1
-			directory = "face_database/person%s" % personID
-			#print(directory)
-			transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, directory)
+			#result.append(region)
+			transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, file_output)
 			
-	print("Person id: %s" % personID)
-	regionInfo = result
+	#regionInfo = result
 
 	#display image to check the bounding box
 	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
