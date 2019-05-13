@@ -156,7 +156,10 @@ def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2
 	return [eye2[1] - eye1[1], eye1[0] - eye2[0]]
 
 def split_to_get_face(image, pivot, dist, file_output, ratio = (-1.2, 1.8, -1.0, 1.0), output_size = OUTPUT_SIZE):
-	m, n, p = image.shape
+	if len(image.shape) == 2:
+		m, n = image.shape
+	else:
+		m, n, p = image.shape
 
 	top = int(max(0, (pivot[1] + ratio[0] * dist)))
 	bottom = int(min(m - 1, (pivot[1] + ratio[1] * dist)))
