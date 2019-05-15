@@ -203,7 +203,7 @@ def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs
 		split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
 			directory = (tempDirectory % count))
 
-def get_possible_face_regions(image, m, n, tempX, tempY):
+def get_possible_face_regions(tempID, image, m, n, tempX, tempY):
 	if (m == -1):
 		print("something wrong 0")
 		return
@@ -268,9 +268,9 @@ def get_possible_face_regions(image, m, n, tempX, tempY):
 	# 	for i in range(0, temp):
 	# 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
-	cv2.imshow('friend', image)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
+	cv2.imshow('%s' % tempID, image)
+	#cv2.waitKey(0)
+	#cv2.destroyAllWindows()
 
 	#divide image and save it to database
 	# ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/development/hello%s.jpg")
