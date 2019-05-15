@@ -11,8 +11,8 @@ import database_manager as db
 if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
-	#imageName = input("Input name of the image:")
-	imageName = './input/hoang/hoang7.jpg'
+	temp = input("Input name of the image:")
+	imageName = './input/hoanghuy/%s.jpg' % temp
 	image = cv2.imread(imageName)
 	#image = cv2.resize(image, dsize = None, fx = 1.0, fy = 1.0)
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)

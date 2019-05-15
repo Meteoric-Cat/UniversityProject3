@@ -299,3 +299,7 @@ def find_the_farthest_point(line, point_list, mode = 1):
 
 	return result
 
+def euclid_dist(point1, point2):
+	temp = point1[0, :] - point2[0, :]
+	temp = temp**2
+	return (sqrt(sum(temp)))
