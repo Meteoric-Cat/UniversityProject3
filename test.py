@@ -15,8 +15,10 @@ if (__name__ == "__main__"):
 
 	for i in range(0, 13):
 		image = fm.read_test_image(name = "%s.jpg" % i)
-		result = pca.detect_face(image, mean, eigenfaces)
-		print(result)
+		result = pca.detect_face(image, mean, eigenfaces, dist_threshold = 2000)		
+		if (result):
+			personID = pca.recognize_face(image, mean, eigenfaces)		
+		print(personID)
 	
 	db.clean_up()
 

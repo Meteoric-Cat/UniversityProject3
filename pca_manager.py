@@ -51,8 +51,8 @@ def recognize_face(image, mean = None, eigenfaces = None, dist_threshold = 5):
 	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 
 	subspaceImages = db.get_subspace_images()
+	weight_count = eigenfaces.shape[0]
 	weights = np.zeros((1, weight_count))
-	weight_count = 10
 	min_dist = 100000000
 	personId = -1
 	

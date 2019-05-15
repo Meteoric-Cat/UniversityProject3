@@ -31,12 +31,14 @@ class SubspaceImage(Base):
 	Owner = relationship("Person")
 
 	def get_weights_as_array(self, weight_count = 10):
-		values = self.Weights.split(' ')
+		values = self.Weights.split('  ')
 		temp = range(1, weight_count - 1)
 		result = []
-
+		# clean_up()
+		# print(values)
 		result.append(float(values[0][1:]))
 		for i in temp:
+			print(values[i])
 			result.append(float(values[i]))
 		result.append(float(values[weight_count - 1][:-1]))		
 
@@ -103,6 +105,7 @@ def create_subspace_images(file_info, weights, remove = False):
 	temp = range(0, len(file_info))
 
 	for i in temp:
+		print(str(weights))
 		Images.append(
 			SubspaceImage(Path = file_info[i][1], OnwerId = file_info[i][0], Weights = str(weights[i])))
 
