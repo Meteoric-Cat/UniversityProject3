@@ -82,7 +82,7 @@ def find_possible_eye_blocks(image, m, n, tempX, tempY, possible_eye_info,
 
 	return result
 
-def match_eyes(image, m, n, possible_eye_info, pair_size_error = 10, dist_ratio = (0.2, 0.65)):
+def match_eyes(image, m, n, possible_eye_info, pair_size_error = 20, dist_ratio = (0.2, 0.65)):
 	infoLength = len(possible_eye_info)
 	temp = range(0, infoLength)
 	result = []
@@ -202,7 +202,7 @@ def split_to_get_face(image, pivot, dist, file_output, ratio = (-1.2, 1.8, -1.0,
 			check = False 			
 
 		if not (check is None):
-			fm.write_facial_image_to_file(check, personID, tempImage)		
+			fm.write_facial_image_to_file(personID, tempImage)		
 		cv2.destroyWindow("Facial image")
 
 def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs,
@@ -273,7 +273,7 @@ def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
 	print('hello7')
 	result = []	
 	image = image.astype(np.uint8)
-	image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+	image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 	for region in regionInfo:
 		tempSkinImage = skinMap[region[0]:region[2], region[1]:region[3]].copy()
 

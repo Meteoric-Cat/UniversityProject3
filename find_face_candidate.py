@@ -80,7 +80,7 @@ def find_possible_eye_blocks(image, m, n, tempX, tempY, possible_eye_info,
 
 	return result
 
-def match_eyes(image, m, n, possible_eye_info, pair_size_error = 5, dist_ratio = (0.2, 0.65)):
+def match_eyes(image, m, n, possible_eye_info, pair_size_error = 15, dist_ratio = (0.2, 0.65)):
 	infoLength = len(possible_eye_info)
 	temp = range(0, infoLength)
 	result = []
@@ -154,7 +154,10 @@ def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2
 	return [eye2[1] - eye1[1], eye1[0] - eye2[0]]
 
 def split_to_get_face(image, pivot, dist, directory, ratio = (-1.2, 1.8, -1.0, 1.0), output_size = OUTPUT_SIZE):
-	m, n = image.shape
+	if (len(image.shape) == 2):
+		m, n = image.shape
+	else:
+		m, n, p = image.shape
 
 	top = int(max(0, (pivot[1] + ratio[0] * dist)))
 	bottom = int(min(m - 1, (pivot[1] + ratio[1] * dist)))
@@ -166,7 +169,9 @@ def split_to_get_face(image, pivot, dist, directory, ratio = (-1.2, 1.8, -1.0, 1
 	#print(top, bottom, left, right)
 	tempImage = image[top:bottom, left:right]
 	tempImage = cv2.resize(tempImage, output_size)
-	cv2.imwrite(directory, tempImage)
+	cv2.imshow("hello", tempImage)
+	cv2.waitKey(0)
+	cv2.destroyWindow("hello")
 
 def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs,
 		m, n, tempX, tempY, directory):
@@ -193,8 +198,8 @@ def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs
 		pivot = tuple(pivot)
 
 		tempImage = image.copy()
-		# cv2.rectangle(tempImage, (eye1[1], eye1[0]), (eye1[3], eye1[2]), (0, 255, 0), 1)
-		# cv2.rectangle(tempImage, (eye2[1], eye2[0]), (eye2[3], eye2[2]), (0, 255, 0), 1)
+		cv2.rectangle(tempImage, (eye1[1], eye1[0]), (eye1[3], eye1[2]), (0, 255, 0), 1)
+		cv2.rectangle(tempImage, (eye2[1], eye2[0]), (eye2[3], eye2[2]), (0, 255, 0), 1)
 		mat = cv2.getRotationMatrix2D(pivot, angleToRotate, 1.0)
 		tempImage = cv2.warpAffine(tempImage, mat, tempImage.shape[1::-1])
 
@@ -203,7 +208,7 @@ def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs
 		split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
 			directory = (tempDirectory % count))
 
-def get_possible_face_regions(tempID, image, m, n, tempX, tempY):
+def get_possible_face_regions(image, m, n, tempX, tempY, tempID = 0):
 	if (m == -1):
 		print("something wrong 0")
 		return
@@ -238,39 +243,39 @@ def get_possible_face_regions(tempID, image, m, n, tempX, tempY):
 	result = []	
 	personID = 0
 	image = image.astype(np.uint8)
-	image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-	# for region in regionInfo:
-	# 	tempSkinImage = skinMap[region[0]:region[2], region[1]:region[3]]
+	image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+	for region in regionInfo:
+		tempSkinImage = skinMap[region[0]:region[2], region[1]:region[3]]
 
-	# 	tempM, tempN, tempTempX, tempTempY = ut.get_size_and_ranges(tempSkinImage)
+		tempM, tempN, tempTempX, tempTempY = ut.get_size_and_ranges(tempSkinImage)
 	
-	# 	#tempImage values have been reversed
-	# 	eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
+		#tempImage values have been reversed
+		eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
 
-	# 	if (len(eyePairs) > 0):
-	# 		result.append(region)
-	# 		personID += 1
-	# 		directory = "face_database/person%s" % personID
-	# 		#print(directory)
-	# 		transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, directory)
+		if (len(eyePairs) > 0):
+			result.append(region)
+			personID += 1
+			directory = "face_database/person%s" % personID
+			#print(directory)
+			transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, directory)
 			
 	print("Person id: %s" % personID)
 	regionInfo = result
 
 	#display image to check the bounding box
 	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-	image[:, :] = skinMap[:, :] * 255
+	# image[:, :] = skinMap[:, :] * 255
 	
 	#ut.convert_between_bgr_and_rgb(image, m, n, tempX, tempY)
-	image = image.astype(np.uint8)
-	# temp = len(regionInfo)
-	# if (temp > 0):
-	# 	for i in range(0, temp):
-	# 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
+	# image = image.astype(np.uint8)
+	# # temp = len(regionInfo)
+	# # if (temp > 0):
+	# # 	for i in range(0, temp):
+	# # 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
-	cv2.imshow('%s' % tempID, image)
-	#cv2.waitKey(0)
-	#cv2.destroyAllWindows()
+	# cv2.imshow('%s' % tempID, image)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()
 
 	#divide image and save it to database
 	# ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/development/hello%s.jpg")

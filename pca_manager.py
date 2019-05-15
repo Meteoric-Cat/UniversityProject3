@@ -1,6 +1,7 @@
-from cv2 import PCACompute
+from cv2 import PCACompute, PCAProject, PCABackProject
 
 import file_system_manager as fm
+import numpy as np
 import database_manager as db
 
 def find_meanface_and_eigenfaces(component_count = 10):
@@ -8,25 +9,29 @@ def find_meanface_and_eigenfaces(component_count = 10):
 	images, filePaths = fm.read_facial_images_into_matrix()
 	
 	meanface, eigenfaces = PCACompute(images, np.empty((0)), maxComponents = component_count)
-	checkOld = fm.write_meanface_and_eigenfaces(mean, eigenfaces)
+	checkOld = fm.write_meanface_and_eigenfaces(meanface, eigenfaces)
 
 	#perform projection and save data to the database
-	projectionResult = PCAProject(images, mean, eigenfaces)
+	projectionResult = PCAProject(images, meanface, eigenfaces)
 	db.create_subspace_images(filePaths, projectionResult, remove = checkOld)
+
+	return meanface, eigenfaces
 
 def detect_face(image, mean, eigenfaces, dist_threshold = 5):
 	if (mean is None):
 		mean, eigenfaces = fm.read_meanface_and_eigenfaces(None)
 
-	tempImage = image.flatten()
+	temp = image.flatten()
+	tempImage = np.zeros((1, temp.shape[0]))
+	tempImage[0, :] = temp[:]
 	projectionResult = PCACompute(tempImage, mean, eigenfaces)
 
-	reconstructedImage = PCAbackProject(projectionResult, mean, eigenfaces)
+	reconstructedImage = PCABackProject(projectionResult, mean, eigenfaces)
 	if (ut.euclid_dist(reconstructedImage, tempImage) < dist_threshold):
 		return True
 	return False
 
-def recognize_face(image, mean, eigenfaces, dist_threshold = 5):
+def recognize_face(image, mean = None, eigenfaces = None, dist_threshold = 5):
 	if (mean is None):
 		mean, eigenfaces = fm.read_meanface_and_eigenfaces(None)
 

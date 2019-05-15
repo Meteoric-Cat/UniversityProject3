@@ -53,6 +53,10 @@ def renew_tables():
 
 	create_tables()
 
+def renew_subspaceimage_table():
+	SubspaceImage.__table__.drop(engine)
+	SubspaceImage.__table__.create(engine)
+
 def get_people(*ids):
 	session = Session()
 	people = None

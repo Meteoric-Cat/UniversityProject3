@@ -1,19 +1,19 @@
-from cv2 import imwrite, imread
+from cv2 import imwrite, imread, IMREAD_GRAYSCALE
 
 import os
-
+import numpy as np
 import database_manager as db
 
 IMAGE_PATH = "image_storage"
 OUTPUT_SIZE = (100, 100)
 
-def read_facial_images_into_matrix(personCount, directory, as_rows = True, image_size = OUTPUT_SIZE):
+def read_facial_images_into_matrix(personCount = None, directory = None, as_rows = True, image_size = OUTPUT_SIZE):
 	imageCount = 0
 	temp = None
 	imagePerPerson = []
 
 	if (directory is None):
-		directory = IMAGE_PATH + "/facial_images/person%s"
+		directory = IMAGE_PATH + "/facial_images/person_%s"
 
 	if (personCount is None):
 		personCount = db.get_people_count()
@@ -30,7 +30,7 @@ def read_facial_images_into_matrix(personCount, directory, as_rows = True, image
 		for i in temp:
 			entries = os.scandir(directory % i)
 			for entry in entries:
-				tempImage = imread(entry.path)
+				tempImage = imread(entry.path, IMREAD_GRAYSCALE)
 				tempImage = tempImage.flatten()				
 
 				result[count, :] = tempImage[:]
@@ -42,7 +42,7 @@ def read_facial_images_into_matrix(personCount, directory, as_rows = True, image
 		for i in temp:
 			entries = os.scandir(directory % i)
 			for entry in entries:
-				tempImage = imread(entry.path)
+				tempImage = imread(entry.path, IMREAD_GRAYSCALE)
 				tempImage = tempImage.flatten()
 
 				result[:, count] = tempImage[:]
@@ -58,7 +58,7 @@ def clean_eigenface_images_up(directory = IMAGE_PATH + "/eigenface_images"):
 	for entry in entries:
 		os.remove(entry.path)
 
-def write_meanface_and_eigenfaces(mean, eigenfaces, directory, output_size = OUTPUT_SIZE):
+def write_meanface_and_eigenfaces(mean, eigenfaces, directory = None, output_size = OUTPUT_SIZE):
 	check = True
 
 	if (directory is None):
@@ -73,7 +73,8 @@ def write_meanface_and_eigenfaces(mean, eigenfaces, directory, output_size = OUT
 	count = 0
 	directory = directory + "/eigenface_%s.jpg"
 
-	for face in eigenfaces:
+	# print(eigenfaces[0])
+	for face in eigenfaces:	
 		temp = face.reshape(output_size)
 		count += 1
 		imwrite(directory % count, temp)
@@ -96,13 +97,16 @@ def read_meanface_and_eignfaces(directory, eigenface_count = 10):
 
 	return mean, eigenfaces
 		
-def write_facial_image_to_file(new_directory = False, personId = -1, image = None):
-	directory = (IMAGE_PATH + '/people_image/person%s') % personId
+def write_facial_image_to_file(personId = -1, image = None):
+	directory = (IMAGE_PATH + '/facial_images/person_%s') % personId
 	imageId = 0
 
-	if (new_directory):
+	if not (os.path.isdir(directory)):
 		os.mkdir(directory)
 	else:
 		imageId = len(list(os.scandir(directory)))
 
 	imwrite(((directory + "/%s.jpg") % imageId), image)
+
+def read_test_image(name, directory = IMAGE_PATH + "/test_images"):
+	return imread(directory + "/" + name, IMREAD_GRAYSCALE)
