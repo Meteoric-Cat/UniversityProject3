@@ -108,5 +108,5 @@ def write_facial_image_to_file(personId = -1, image = None):
 
 	imwrite(((directory + "/%s.jpg") % imageId), image)
 
-def read_test_image(name, directory = IMAGE_PATH + "/test_images"):
-	return imread(directory + "/" + name, IMREAD_GRAYSCALE)
+def read_test_image(name, directory = IMAGE_PATH + "/test_images/"):
+	return imread(directory + name, IMREAD_GRAYSCALE)

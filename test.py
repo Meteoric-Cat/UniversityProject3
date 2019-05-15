@@ -13,11 +13,11 @@ if (__name__ == "__main__"):
 	db.renew_subspaceimage_table()
 	mean, eigenfaces = pca.find_meanface_and_eigenfaces()
 
-	for i in range(1, 13):
+	for i in range(0, 13):
 		image = fm.read_test_image(name = "%s.jpg" % i)
 		result = pca.detect_face(image, mean, eigenfaces)
 		print(result)
-
+	
 	db.clean_up()
 
 

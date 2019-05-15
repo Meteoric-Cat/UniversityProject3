@@ -243,28 +243,28 @@ def get_possible_face_regions(image, m, n, tempX, tempY, tempID = 0):
 	result = []	
 	personID = 0
 	image = image.astype(np.uint8)
-	image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-	for region in regionInfo:
-		tempSkinImage = skinMap[region[0]:region[2], region[1]:region[3]]
+	# image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+	# for region in regionInfo:
+	# 	tempSkinImage = skinMap[region[0]:region[2], region[1]:region[3]]
 
-		tempM, tempN, tempTempX, tempTempY = ut.get_size_and_ranges(tempSkinImage)
+	# 	tempM, tempN, tempTempX, tempTempY = ut.get_size_and_ranges(tempSkinImage)
 	
-		#tempImage values have been reversed
-		eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
+	# 	#tempImage values have been reversed
+	# 	eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
 
-		if (len(eyePairs) > 0):
-			result.append(region)
-			personID += 1
-			directory = "face_database/person%s" % personID
-			#print(directory)
-			transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, directory)
+	# 	if (len(eyePairs) > 0):
+	# 		result.append(region)
+	# 		personID += 1
+	# 		directory = "face_database/person%s" % personID
+	# 		#print(directory)
+	# 		transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, directory)
 			
-	print("Person id: %s" % personID)
-	regionInfo = result
+	# print("Person id: %s" % personID)
+	# regionInfo = result
 
 	#display image to check the bounding box
-	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-	# image[:, :] = skinMap[:, :] * 255
+	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
+	image[:, :] = skinMap[:, :] * 255
 	
 	#ut.convert_between_bgr_and_rgb(image, m, n, tempX, tempY)
 	# image = image.astype(np.uint8)
@@ -273,9 +273,9 @@ def get_possible_face_regions(image, m, n, tempX, tempY, tempID = 0):
 	# # 	for i in range(0, temp):
 	# # 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
-	# cv2.imshow('%s' % tempID, image)
-	# cv2.waitKey(0)
-	# cv2.destroyAllWindows()
+	cv2.imshow('%s' % tempID, image)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
 
 	#divide image and save it to database
 	# ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/development/hello%s.jpg")

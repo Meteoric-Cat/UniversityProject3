@@ -1,10 +1,11 @@
 from cv2 import PCACompute, PCAProject, PCABackProject
+import numpy as np
 
 import file_system_manager as fm
-import numpy as np
+import utils as ut
 import database_manager as db
 
-def find_meanface_and_eigenfaces(component_count = 10):
+def find_meanface_and_eigenfaces(component_count = 30):
 	'''get matrix of images, calculate mean, eigenvectors and save them in file'''
 	images, filePaths = fm.read_facial_images_into_matrix()
 	
@@ -17,25 +18,36 @@ def find_meanface_and_eigenfaces(component_count = 10):
 
 	return meanface, eigenfaces
 
-def detect_face(image, mean, eigenfaces, dist_threshold = 5):
+def detect_face(image, mean, eigenfaces, dist_threshold = 100):
 	if (mean is None):
 		mean, eigenfaces = fm.read_meanface_and_eigenfaces(None)
 
 	temp = image.flatten()
 	tempImage = np.zeros((1, temp.shape[0]))
 	tempImage[0, :] = temp[:]
-	projectionResult = PCACompute(tempImage, mean, eigenfaces)
+	# print(eigenfaces)
+	# print(temp)
+	print(tempImage)
+	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 
+	# print(projectionResult[1].shape)
+	# print(projectionResult)
 	reconstructedImage = PCABackProject(projectionResult, mean, eigenfaces)
+	print(reconstructedImage)
+	# print(tempImage)
+	print(ut.euclid_dist(reconstructedImage, tempImage))
+
 	if (ut.euclid_dist(reconstructedImage, tempImage) < dist_threshold):
-		return True
+		return True		
 	return False
 
 def recognize_face(image, mean = None, eigenfaces = None, dist_threshold = 5):
 	if (mean is None):
 		mean, eigenfaces = fm.read_meanface_and_eigenfaces(None)
 
-	tempImage = image.flatten()
+	temp = image.flatten()
+	tempImage = np.zeros((1, temp.shape[0]))
+	tempImage[0, :] = temp[:]
 	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 
 	subspaceImages = db.get_subspace_images()

@@ -155,7 +155,7 @@ def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2
 		return perpendicularVector
 	return [eye2[1] - eye1[1], eye1[0] - eye2[0]]
 
-def split_to_get_face(image, pivot, dist, file_output, ratio = (-1.2, 1.8, -1.0, 1.0), output_size = OUTPUT_SIZE):
+def split_to_get_face(image, pivot, dist, file_output, ratio = (-0.5, 1.5, -0.9, 0.9), output_size = OUTPUT_SIZE):
 	if len(image.shape) == 2:
 		m, n = image.shape
 	else:
@@ -198,12 +198,12 @@ def split_to_get_face(image, pivot, dist, file_output, ratio = (-1.2, 1.8, -1.0,
 				print("This person id will be:%s" % personID)
 			else:
 				check = None
-		else:
-			check = False 			
 
 		if not (check is None):
 			fm.write_facial_image_to_file(personID, tempImage)		
+			# return 'hello'
 		cv2.destroyWindow("Facial image")
+	# return 'hallo'
 
 def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs,
 		m, n, tempX, tempY, file_output):
@@ -236,8 +236,12 @@ def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs
 
 		#print(tempImage[1,1,1])
 		#count += 1
-		split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
+		value = split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
 			file_output)
+	# 	if (value == 'hello'):
+	# 		print('bye')
+	# 		return value
+	# return value
 
 def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
 	if (m == -1):
@@ -284,7 +288,9 @@ def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
 
 		if (len(eyePairs) > 0):
 			result.append(region)
-			transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, file_output)
+			value = transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, file_output)
+			# if (value == 'hello'):
+			# 	break
 			# pass
 	regionInfo = result
 
