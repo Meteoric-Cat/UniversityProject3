@@ -304,5 +304,8 @@ def euclid_dist(point1, point2):
 	temp = temp**2
 	return (sqrt(sum(temp)))
 
-def concate_to_string(weights):
-	
+def concatenate_into_string(input_list):
+	result = ''
+	for value in input_list:
+		result += (str(value) + ',')
+	return result[:-1]

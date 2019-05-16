@@ -10,7 +10,7 @@ import pca_manager as pca
 if (__name__ == "__main__"):
 	setrecursionlimit(10000)
 
-	db.renew_subspaceimage_table()
+	db.renew_subspaceimages_table()
 	mean, eigenfaces = pca.find_meanface_and_eigenfaces()
 
 	for i in range(0, 13):

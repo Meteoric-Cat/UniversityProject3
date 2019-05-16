@@ -3,6 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker, relationship
 
+import utils as ut
+
 engine = create_engine("mysql+pymysql://root:caothanhhuyen123@localhost:3306/face_recognition")
 Session = sessionmaker(bind =  engine)
 
@@ -24,23 +26,21 @@ class SubspaceImage(Base):
 
 	Id = Column(Integer, primary_key = True)
 	Path = Column(String(250))
-	Weights = Column(String(1000))
+	Weights = Column(String(5000))
 
-	OnwerId = Column(Integer, ForeignKey("People.Id",
+	OwnerId = Column(Integer, ForeignKey("People.Id",
 		ondelete='CASCADE'))
 	Owner = relationship("Person")
 
 	def get_weights_as_array(self, weight_count = 10):
-		values = self.Weights.split('  ')
-		temp = range(1, weight_count - 1)
+		values = self.Weights.split(',')
+		# temp = range(1, weight_count - 1)
 		result = []
-		# clean_up()
-		# print(values)
-		result.append(float(values[0][1:]))
-		for i in temp:
-			print(values[i])
-			result.append(float(values[i]))
-		result.append(float(values[weight_count - 1][:-1]))		
+		clean_up()
+		print(values)
+		for value in values:
+			# print(values[i])
+			result.append(float(value))
 
 		return result
 
@@ -55,7 +55,7 @@ def renew_tables():
 
 	create_tables()
 
-def renew_subspaceimage_table():
+def renew_subspaceimages_table():
 	SubspaceImage.__table__.drop(engine)
 	SubspaceImage.__table__.create(engine)
 
@@ -105,17 +105,17 @@ def create_subspace_images(file_info, weights, remove = False):
 	temp = range(0, len(file_info))
 
 	for i in temp:
-		print(str(weights))
-		Images.append(
-			SubspaceImage(Path = file_info[i][1], OnwerId = file_info[i][0], Weights = str(weights[i])))
+		print(weights[i])
+		Images.append(SubspaceImage(Path = file_info[i][1], 
+			OwnerId = file_info[i][0], Weights = ut.concatenate_into_string(weights[i])))
 
 	session = Session()
 	session.add_all(Images)
 	session.commit()
 	session.close()
 
-def delete_subspace_images(ids):
-	if (ids == None):
+def delete_subspace_images(ids = None):
+	if (ids is None):
 		session = Session()
 		session.execute('''TRUNCATE TABLE SubspaceImages''')
 		session.commit()

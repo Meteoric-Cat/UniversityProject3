@@ -59,13 +59,13 @@ def clean_eigenface_images_up(directory = IMAGE_PATH + "/eigenface_images"):
 		os.remove(entry.path)
 
 def write_meanface_and_eigenfaces(mean, eigenfaces, directory = None, output_size = OUTPUT_SIZE):
-	check = True
+	check = False
 
 	if (directory is None):
 		directory = IMAGE_PATH + "/eigenface_images"		
 	if (os.path.exists(directory + "/mean.jpg")):
 		clean_eigenface_images_up()
-		check = False
+		check = True
 
 	temp = mean.reshape(output_size)
 	imwrite(directory + "/mean.jpg", temp)
