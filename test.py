@@ -4,6 +4,7 @@ import cv2
 from sys import setrecursionlimit
 import database_manager as db 
 import file_system_manager as fm 
+import db_utils as dbut
 
 import pca_manager as pca
 
@@ -12,13 +13,16 @@ if (__name__ == "__main__"):
 
 	db.renew_subspaceimages_table()
 	mean, eigenfaces = pca.find_meanface_and_eigenfaces()
+	subspaceImages = db.get_subspace_images()
+	subspaceWeights = dbut.aggregate_subspaceimage_weights(subspaceImages)
+	temp = range(0, len(subspaceImages))
 
-	for i in range(0, 13):
+	for i in range(0, 16):
 		image = fm.read_test_image(name = "%s.jpg" % i)
-		result = pca.detect_face(image, mean, eigenfaces, dist_threshold = 2000)		
+		result = pca.detect_face(image, mean, eigenfaces, dist_threshold = 1500)		
 		if (result):
-			personID = pca.recognize_face(image, mean, eigenfaces)		
-		print(personID)
+			personID = pca.recognize_face(image, mean, eigenfaces, temp, subspaceImages, subspaceWeights, dist_threshold = 500)		
+			print(personID)
 	
 	db.clean_up()
 

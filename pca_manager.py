@@ -4,6 +4,7 @@ import numpy as np
 import file_system_manager as fm
 import utils as ut
 import database_manager as db
+import db_utils as dbut
 
 def find_meanface_and_eigenfaces(component_count = 30):
 	'''get matrix of images, calculate mean, eigenvectors and save them in file'''
@@ -25,23 +26,17 @@ def detect_face(image, mean, eigenfaces, dist_threshold = 100):
 	temp = image.flatten()
 	tempImage = np.zeros((1, temp.shape[0]))
 	tempImage[0, :] = temp[:]
-	# print(eigenfaces)
-	# print(temp)
-	print(tempImage)
 	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 
-	# print(projectionResult[1].shape)
-	# print(projectionResult)
 	reconstructedImage = PCABackProject(projectionResult, mean, eigenfaces)
-	print(reconstructedImage)
-	# print(tempImage)
-	print(ut.euclid_dist(reconstructedImage, tempImage))
+	# print(ut.euclid_dist(reconstructedImage, tempImage))
 
 	if (ut.euclid_dist(reconstructedImage, tempImage) < dist_threshold):
 		return True		
 	return False
 
-def recognize_face(image, mean = None, eigenfaces = None, dist_threshold = 5):
+def recognize_face(image, mean = None, eigenfaces = None, 
+		indexList = None, subspace_images = None, subspace_image_weights = None, dist_threshold = 5):
 	if (mean is None):
 		mean, eigenfaces = fm.read_meanface_and_eigenfaces(None)
 
@@ -50,26 +45,26 @@ def recognize_face(image, mean = None, eigenfaces = None, dist_threshold = 5):
 	tempImage[0, :] = temp[:]
 	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 
-	subspaceImages = db.get_subspace_images()
-	weight_count = eigenfaces.shape[0]
-	weights = np.zeros((1, weight_count))
-	min_dist = 100000000
+	if (subspace_images is None):
+		subspace_images = db.get_subspace_images()
+		subspace_image_weights = dbut.aggregate_subspaceimage_weights(subspace_images)
+		temp = range(0, len(subspace_images))
+
+	min_dist = 1000000000
 	personId = -1
 	
-	for image in subspaceImages:
-		temp = image.get_weights_as_array(weight_count)
-		weights[0, :] = temp[:]
-
-		dist = ut.euclid_dist(weights, projectionResult)
+	for index in indexList:
+		dist = ut.euclid_dist(subspace_image_weights[index], projectionResult)		
 		if (dist < min_dist):
 			min_dist = dist
-			personId = image.OwnerId
+			personId = subspace_images[index].OwnerId
 
 	if (min_dist > dist_threshold):
 		personId = -1
+	print('recognize dist', min_dist)
 
 	return personId
-	
+
 if (__name__ == '__main__'):
 	find_meanface_and_eigenfaces()
 	db.clean_up()

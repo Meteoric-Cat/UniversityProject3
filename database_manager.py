@@ -32,12 +32,10 @@ class SubspaceImage(Base):
 		ondelete='CASCADE'))
 	Owner = relationship("Person")
 
-	def get_weights_as_array(self, weight_count = 10):
+	def get_weights_as_array(self):
 		values = self.Weights.split(',')
-		# temp = range(1, weight_count - 1)
 		result = []
-		clean_up()
-		print(values)
+
 		for value in values:
 			# print(values[i])
 			result.append(float(value))
@@ -82,6 +80,8 @@ def get_subspace_images(ids = None):
 	session = Session()
 	if (ids is None):
 		result = session.query(SubspaceImage).all()
+	else:
+		result = session.query(SubspaceImage).filter(SubspaceImage.Id.in_(ids))
 	session.close()
 	return result
 
@@ -105,7 +105,6 @@ def create_subspace_images(file_info, weights, remove = False):
 	temp = range(0, len(file_info))
 
 	for i in temp:
-		print(weights[i])
 		Images.append(SubspaceImage(Path = file_info[i][1], 
 			OwnerId = file_info[i][0], Weights = ut.concatenate_into_string(weights[i])))
 
