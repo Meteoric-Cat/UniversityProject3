@@ -1,12 +1,11 @@
 from PySide2 import QtCore as qtcore 
 from PySide2 import QtWidgets as qtw 
 
-import sys
-
 import find_face_candidate3 as fl
 from constants import BUTTON_H, BUTTON_W, CHILD1_TO_CHILD2
 
 class ChildLayout1(qtw.QWidget):
+
 	def __init__(self, parent):
 		super().__init__()
 		self.parent = parent
@@ -47,6 +46,7 @@ class ChildLayout1(qtw.QWidget):
 
 	@qtcore.Slot()
 	def handle_update(self):
-		self.parent.switch_child_layout(CHILD1_TO_CHILD2)		
+		self.parent.switch_child_layout(CHILD1_TO_CHILD2)	
+		self.parent.handle_system_updating()
 
 

@@ -1,5 +1,3 @@
-import sys
-
 from PySide2 import QtCore as qtcore 
 from PySide2 import QtWidgets as qtw 
 
@@ -36,12 +34,14 @@ class ChildLayout2(qtw.QWidget):
 		self.saveButton.setMinimumSize(BUTTON_W, BUTTON_H)
 		self.layout1.addWidget(self.saveButton)
 		self.layout1.setAlignment(self.saveButton, qtcore.Qt.AlignHCenter | qtcore.Qt.AlignVCenter)
+		# self.layout1.setAlignment(self.saveButton, qtcore.Qt.AlignTop)
 
 		self.cancelButton = qtw.QPushButton("Cancel")
 		self.cancelButton.setMinimumSize(BUTTON_W, BUTTON_H)
 		self.cancelButton.setMaximumSize(BUTTON_W, BUTTON_H)
 		self.layout1.addWidget(self.cancelButton)
 		self.layout1.setAlignment(self.cancelButton, qtcore.Qt.AlignHCenter | qtcore.Qt.AlignVCenter)
+		# self.layout1.setAlignment(self.cancelButton, qtcore.Qt.AlignTop)
 
 		self.saveButton.clicked.connect(self.handle_saving)
 		self.cancelButton.clicked.connect(self.handle_canceling)
@@ -51,11 +51,13 @@ class ChildLayout2(qtw.QWidget):
 		self.detectionDistLabel.setText("Detection dist ")
 		self.layout1.addWidget(self.detectionDistLabel)
 		self.layout1.setAlignment(self.detectionDistLabel, qtcore.Qt.AlignHCenter | qtcore.Qt.AlignVCenter)
+		# self.layout1.setAlignment(self.detectionDistLabel, qtcore.Qt.AlignTop)
 
 		self.recognizationDistLabel = qtw.QLabel()
 		self.recognizationDistLabel.setText("Recognization dist ")
 		self.layout1.addWidget(self.recognizationDistLabel)
 		self.layout1.setAlignment(self.recognizationDistLabel, qtcore.Qt.AlignHCenter | qtcore.Qt.AlignVCenter)
+		# self.layout1.setAlignment(self.recognizationDistLabel, qtcore.Qt.AlignTop)
 
 	def create_layer2(self):
 		self.create_infolabels()
@@ -88,4 +90,4 @@ class ChildLayout2(qtw.QWidget):
 
 	qtcore.Slot()
 	def handle_canceling(self):
-		self.parent.switch_child_layout(CHILD2_TO_CHILD1)
+		pass

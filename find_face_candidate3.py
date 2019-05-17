@@ -271,7 +271,7 @@ def get_possible_faces(mode, system_data, image, m, n, tempX, tempY):
 				dist_threshold = system_data.recognizationThreshold)
 
 				if (mode == 1):
-					result.append([personId, tempImage])
+					result.append([personId, regionImage])
 				else:
 					result.append([personId, region])
 	
@@ -314,7 +314,7 @@ def detect_and_recognize_faces(file_name, system_data):
 
 	return fm.write_temp_image(image)
 
-def detect_faces_to_udpate_system(file_name, system_data, new_threshold = None):
+def detect_faces_to_update_system(file_name, system_data, new_threshold = None):
 	image, m, n, tempX, tempY = fm.read_image(file_name)
 	if (m == -1):
 		print("something wrong 1")
