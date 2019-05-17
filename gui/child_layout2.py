@@ -91,3 +91,7 @@ class ChildLayout2(qtw.QWidget):
 	qtcore.Slot()
 	def handle_canceling(self):
 		pass
+
+	def populate_editors(self, personId):
+		if (personId == -1):
+			self.infoEditors[0].setText(str(personId))

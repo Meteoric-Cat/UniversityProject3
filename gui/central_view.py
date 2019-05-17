@@ -19,9 +19,6 @@ class CentralView(qtw.QHBoxLayout):
 
 		self.dataReference = None
 		
-		self.create_components()
-
-	def create_components(self):
 		self.create_layout1()
 		self.create_layout2()
 
@@ -40,7 +37,7 @@ class CentralView(qtw.QHBoxLayout):
 		self.childLayout1.show()
 
 	def create_layout2(self):
-		self.imageBoard = cl3.ImageBoard()
+		self.imageBoard = cl3.ImageBoard(self)
 		self.imageBoard.hide()
 
 		self.childLayout2 = cl2.ChildLayout2(self)

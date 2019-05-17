@@ -9,12 +9,13 @@ SCROLL_SIZE=(1200, 1000)
 BOARD_SIZE=(1200, 2000)
 
 class ImageBoard(qtw.QScrollArea):
-	def __init__(self):
+	def __init__(self, parent):
 		super().__init__()
 		
 		self.images = []
 		self.spacer = qtw.QSpacerItem(IMAGE_SIZE[0], IMAGE_SIZE[1])
-		
+		self.parent = parent		
+
 		self.setMinimumSize(SCROLL_SIZE[0], SCROLL_SIZE[1])
 		self.setMaximumSize(SCROLL_SIZE[0], SCROLL_SIZE[1])
 
@@ -35,7 +36,7 @@ class ImageBoard(qtw.QScrollArea):
 		for imageInfo in images_info:			
 			path = fm.write_temp_image(imageInfo[1])
 			if (len(self.images) <= count):
-				image = Image(imageInfo[0])
+				image = Image(imageInfo[0], self)
 				self.images.append(image)
 
 			self.images[count].add_image(path)
@@ -49,14 +50,23 @@ class ImageBoard(qtw.QScrollArea):
 			self.contentLayout.addItem(self.spacer, int(count / 12), count % 12, 1, spacerColumn)
 
 class Image(qtw.QLabel):
-	def __init__(self, person_id):
+	def __init__(self, person_id, parent):
 		super().__init__()
 
 		self.personId = person_id
+		self.parent = parent
 
 		self.setMaximumSize(IMAGE_SIZE[0], IMAGE_SIZE[1])
 		self.setMinimumSize(IMAGE_SIZE[0], IMAGE_SIZE[1])
 
+
 	def add_image(self, file_name):
 		self.setPixmap(qtgui.QPixmap(file_name))
 		self.update()
+
+	def mousePressEvent(self, event):
+		super().mousePressEvent(event)
+
+		self.parent.parent.childLayout2.populate_editors(self.personId)
+		
+
