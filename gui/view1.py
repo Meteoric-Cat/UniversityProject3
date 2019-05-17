@@ -13,9 +13,19 @@ class View1(qtw.QHBoxLayout):
 		# self.layout = qtw.QBoxLayout(qtw.QBoxLayout.LeftToRight)
 		# self.setLayout(self.layout)
 
+		self.create_image()
+		self.create_child_layout()
+
+	def create_image():
 		self.image = qtw.QLabel("nothing")
+		self.image.setMinimumSize(1200, 1000)
+		self.image.setMaximumSize(1200, 1000)
 		self.addWidget(self.image)
 
+	def display_image(image):
+		
+
+	def create_child_layout()
 		self.childLayout = qtw.QBoxLayout(qtw.QBoxLayout.TopToBottom)
 		self.addWidget(self.childLayout)
 
@@ -25,7 +35,6 @@ class View1(qtw.QHBoxLayout):
 		self.childLayout.addWidget(self.inputButton)
 		self.childLayout.addWidget(self.updateButton)
 
-	def add_handlers():
 
 
 
