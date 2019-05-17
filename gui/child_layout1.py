@@ -3,6 +3,8 @@ from PySide2 import QtWidgets as qtw
 
 import sys
 
+import find_face_candidate3 as fl
+
 BUTTON_W = 200
 BUTTON_H = 40	
 
@@ -39,7 +41,10 @@ class ChildLayout1(qtw.QWidget):
 
 	@qtcore.Slot()
 	def handle_recognization(self):
-		fileName = qtw.QFileDialog.getOpenFileName(None, self.tr("Choose Image"), "../input")[0]
+		fileName = qtw.QFileDialog.getOpenFileName(None, self.tr("Choose Image"), "./input")[0]
+		#self.parent.display_image(fileName)
+
+		fileName = fl.detect_and_recognize_faces(fileName, self.parent.dataReference)
 		self.parent.display_image(fileName)
 
 	@qtcore.Slot()

@@ -26,6 +26,7 @@ def detect_face(image, mean, eigenfaces, dist_threshold = 1500):
 	temp = image.flatten()
 	tempImage = np.zeros((1, temp.shape[0]))
 	tempImage[0, :] = temp[:]
+	# print(type(tempImage[0, 0]), type(mean[0, 0]))
 
 	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 	reconstructedImage = PCABackProject(projectionResult, mean, eigenfaces)

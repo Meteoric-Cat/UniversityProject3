@@ -3,6 +3,8 @@ from PySide2 import QtCore as qtcore
 from PySide2 import QtWidgets as qtw
 
 import central_view
+import system_data
+import database_manager as db 
 
 WINDOW_W = 1600
 WINDOW_H = 1000
@@ -15,11 +17,16 @@ class MainWindow(qtw.QWidget):
 		self.layout = central_view.CentralView()
 		self.setLayout(self.layout)
 
-app = qtw.QApplication()
+def run_application():
+	app = qtw.QApplication()
 
-mainWindow = MainWindow()
-mainWindow.resize(WINDOW_W, WINDOW_H)
-mainWindow.show()
+	mainWindow = MainWindow()
+	mainWindow.resize(WINDOW_W, WINDOW_H)
+	mainWindow.show()
 
-sys.exit(app.exec_())
+	systemData = system_data.RunningSystemData()
+	mainWindow.layout.dataReference = systemData
+
+	app.exec_()
+	db.clean_up()
 

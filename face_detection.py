@@ -1,7 +1,7 @@
 from sys import setrecursionlimit
 
 import cv2
-import find_face_candidate3 as ffc 
+import find_face_candidate as ffc 
 import numpy as np
 import gc
 import utils as ut

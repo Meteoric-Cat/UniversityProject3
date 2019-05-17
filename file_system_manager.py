@@ -1,9 +1,11 @@
 from cv2 import imwrite, imread, IMREAD_GRAYSCALE
 
 import os
-import numpy as np
-import database_manager as db
 import csv
+import numpy as np
+
+import database_manager as db
+import utils as ut
 
 IMAGE_PATH = "image_storage"
 OUTPUT_SIZE = (100, 100)
@@ -89,28 +91,32 @@ def write_meanface_and_eigenfaces(mean, eigenfaces, directory = None, output_siz
 
 	return check
 
-def read_meanface_and_eignfaces(directory = None, eigenface_count = 11):
+def read_meanface_and_eigenfaces(directory = None, eigenface_count = 11):
 	if (directory is None):
 		directory = IMAGE_PATH + "/eigenface_images"
 
-	mean = imread(directory + "/mean.jpg").flatten()
-	entries = os.scandir(directory) 
+	mean = imread(directory + "/mean.jpg", IMREAD_GRAYSCALE).reshape(1, OUTPUT_SIZE[0] * OUTPUT_SIZE[1]).astype(np.float)
 
 	eigenfaces = None
 	with open(directory + "/eigenfaces.csv") as csvFile:
 		csvReader = csv.reader(csvFile, delimiter=",")
 
-		rowCount = sum(1 for row in csvReader)
-		eigenface_count = int(min(eigenface_count, rowCount))
-		eigenfaces = np.zeros([eigenface_count, OUTPUT_SIZE[0] * OUTPUT_SIZE[1]])
-
-		r = 0
+		rows = np.zeros((eigenface_count, OUTPUT_SIZE[0] * OUTPUT_SIZE[1]))
+		rowCount = 0
 		for row in csvReader:
-			c = 0
+			j = 0
 			for value in row:
-				eigenfaces[r, c] = float(value)
-				c += 1
-			r += 1
+				rows[rowCount, j] = value
+				j += 1			
+			rowCount += 1
+			if (rowCount == eigenface_count):
+				break
+
+		eigenface_count = int(min(eigenface_count, rowCount))
+		eigenfaces = np.zeros((eigenface_count, OUTPUT_SIZE[0] * OUTPUT_SIZE[1]))
+
+		for i in range(0, eigenface_count):
+			eigenfaces[i, :] = rows[i, :]
 
 	return mean, eigenfaces
 		
@@ -127,3 +133,25 @@ def write_facial_image_to_file(personId = -1, image = None):
 
 def read_test_image(name, directory = IMAGE_PATH + "/test_images/"):
 	return imread(directory + name, IMREAD_GRAYSCALE)
+
+def read_image(file_path):
+	image = imread(file_path)
+	if (image is None):
+		return None, -1, -1, -1, -1
+	m, n, tempX, tempY = ut.get_size_and_ranges(image)
+
+	if (m > 1000 or n > 1000):
+		image = cv2.resize(image, dsize = None, fx = 0.7, fy = 0.7)
+		pass
+	else:
+		if (m > 2000 or n > 2000):
+			image = cv2.resize(image, dsize = None, fx = 0.4, fy = 0.4)
+	return image, m, n, tempX, tempY
+
+def write_temp_image(image, directory = None):
+	if (directory is None):
+		directory = IMAGE_PATH + "/temp.jpg"
+
+	imwrite(directory, image)
+	return directory
+

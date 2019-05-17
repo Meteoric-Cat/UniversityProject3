@@ -15,6 +15,8 @@ class CentralView(qtw.QHBoxLayout):
 	def __init__(self):
 		super().__init__()
 
+		self.dataReference = None
+		
 		self.create_components()
 
 	def create_components(self):

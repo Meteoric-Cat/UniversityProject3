@@ -157,7 +157,7 @@ def get_face_direction(region_skin_image, m, n, tempX, tempY, border, eye1, eye2
 		return perpendicularVector
 	return [eye2[1] - eye1[1], eye1[0] - eye2[0]]
 
-def split_to_get_face(image, pivot, dist, file_output, ratio = (-0.5, 1.5, -0.9, 0.9), output_size = OUTPUT_SIZE):
+def split_to_get_face(image, pivot, dist, ratio = (-0.5, 1.5, -0.9, 0.9), output_size = OUTPUT_SIZE):
 	if len(image.shape) == 2:
 		m, n = image.shape
 	else:
@@ -174,7 +174,7 @@ def split_to_get_face(image, pivot, dist, file_output, ratio = (-0.5, 1.5, -0.9,
 	return tempImage
 
 def get_face_base_on_eye_pairs(system_data, image, region_info, region_skin_image, eye_pairs,
-		m, n, tempX, tempY, file_output):
+		m, n, tempX, tempY):
 	faceBorder = find_longest_border(region_skin_image, m, n, tempX, tempY)
 	downVector = [0, 1]
 	# count = 0
@@ -206,8 +206,9 @@ def get_face_base_on_eye_pairs(system_data, image, region_info, region_skin_imag
 
 		#print(tempImage[1,1,1])
 		#count += 1
-		tempImage = split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
-			file_output)
+		tempImage = split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2))
+		# print("MEAN", system_data.mean)
+		# print("EIGENFACES", system_data.eigenfaces)
 		check, dist = pca.detect_face(tempImage, system_data.mean, system_data.eigenfaces, 
 			dist_threshold = system_data.detectionThreshold)
 
@@ -223,15 +224,11 @@ def get_face_base_on_eye_pairs(system_data, image, region_info, region_skin_imag
 	# 		return value
 	# return value
 
-def get_possible_face_regions(mode, system_data, image, m, n, tempX, tempY, mean, eigenfaces, file_output = True):
+def get_possible_faces(mode, system_data, image, m, n, tempX, tempY):
 	'''
 	 mode 1: for detection only
 	 mode 2: for recognization
 	'''
-	if (m == -1):
-		print("something wrong 0")
-		return
-
 	# ut.balance_color(image, m, n, tempX, tempY)
 	# image = ut.white_balance(image)
 	# image = ut.white_balance(image)
@@ -272,16 +269,17 @@ def get_possible_face_regions(mode, system_data, image, m, n, tempX, tempY, mean
 		eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
 
 		if (len(eyePairs) > 0):
-			dist, regionImage = get_face_base_on_eye_pairs(grayscaleImage, region, tempSkinImage, 
-				eyePairs, tempM, tempN, tempTempX, tempTempY, file_output)
-			personId = pca.recognize(regionImage, system_data.mean, system_data.eigenfaces, indexList,
+			dist, regionImage = get_face_base_on_eye_pairs(system_data, grayscaleImage, region, tempSkinImage, 
+				eyePairs, tempM, tempN, tempTempX, tempTempY)
+			if not (regionImage is None):
+				personId = pca.recognize_face(regionImage, system_data.mean, system_data.eigenfaces, indexList,
 				system_data.subspaceImages, system_data.subspaceImageWeights, 
 				dist_threshold = system_data.recognizationThreshold)
 
-			if (mode == 1):
-				result.append([personId, tempImage])
-			else:
-				result.append([personId, region])
+				if (mode == 1):
+					result.append([personId, tempImage])
+				else:
+					result.append([personId, region])
 	
 	return result		
 
@@ -302,4 +300,24 @@ def get_possible_face_regions(mode, system_data, image, m, n, tempX, tempY, mean
 	#divide image and save it to database
 	# ut.split_image_into_images(image.astype(np.uint8), regionInfo, directory = "face_database/development/hello%s.jpg")
 
+def detect_and_recognize_faces(file_name, system_data):
+	image, m, n, tempX, tempY = fm.read_image(file_name)
+	if (m == -1):
+		print("something wrong 0")
+		return
+
+	image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+	faceInfo = get_possible_faces(2, system_data, image, m, n, tempX, tempY)
+
+	image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+	for face in faceInfo:
+		region = face[1]
+		cv2.rectangle(image, (region[1], region[0]), (region[3], region[2]), 
+			(0, 255, 0), 1)
+		if (face[0] == -1):
+			face[0] = "unknown"
+		cv2.putText(image, str(face[0]), (region[1], region[0]), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 2)
+
+	return fm.write_temp_image(image)
 

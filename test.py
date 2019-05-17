@@ -13,6 +13,9 @@ if (__name__ == "__main__"):
 
 	db.renew_subspaceimages_table()
 	mean, eigenfaces = pca.find_meanface_and_eigenfaces()
+	print(type(eigenfaces))
+	print(mean.shape)
+	print(type(mean))
 	subspaceImages = db.get_subspace_images()
 	subspaceWeights = dbut.aggregate_subspaceimage_weights(subspaceImages)
 	temp = range(0, len(subspaceImages))
