@@ -12,3 +12,16 @@ class RunningSystemData():
 
 		self.detectionThreshold = 2000
 		self.recognizationThreshold = 500
+
+	def change_detection_threshold(value = None):
+		'''
+		this function will increase the detection threshold when updating the system data
+		'''
+		self.subDetectionThreshold = self.detectionThreshold
+		if (value is None):
+			self.detectionThreshold = 3500
+		else:
+			self.detectionThreshold = value
+
+	def recover_detection_threshold():
+		self.detectionThreshold = self.subDetectionThreshold

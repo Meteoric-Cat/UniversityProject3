@@ -6,8 +6,7 @@ import central_view
 import system_data
 import database_manager as db 
 
-WINDOW_W = 1600
-WINDOW_H = 1000
+from constants import WINDOW_W, WINDOW_H
 
 class MainWindow(qtw.QWidget):
 	def __init__(self):

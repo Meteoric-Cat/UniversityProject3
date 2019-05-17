@@ -204,13 +204,12 @@ def get_face_base_on_eye_pairs(system_data, image, region_info, region_skin_imag
 		mat = cv2.getRotationMatrix2D(pivot, angleToRotate, 1.0)
 		tempImage = cv2.warpAffine(tempImage, mat, tempImage.shape[1::-1])
 
-		#print(tempImage[1,1,1])
-		#count += 1
 		tempImage = split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2))
-		# print("MEAN", system_data.mean)
-		# print("EIGENFACES", system_data.eigenfaces)
 		check, dist = pca.detect_face(tempImage, system_data.mean, system_data.eigenfaces, 
 			dist_threshold = system_data.detectionThreshold)
+		# cv2.imshow("value", tempImage)
+		# cv2.waitKey(0)
+		# cv2.destroyWindow("value")
 
 		if (check):
 			if (dist < minDist):
@@ -218,11 +217,6 @@ def get_face_base_on_eye_pairs(system_data, image, region_info, region_skin_imag
 				minImage = tempImage
 
 	return minDist, minImage
-
-	# 	if (value == 'hello'):
-	# 		print('bye')
-	# 		return value
-	# return value
 
 def get_possible_faces(mode, system_data, image, m, n, tempX, tempY):
 	'''
@@ -307,17 +301,30 @@ def detect_and_recognize_faces(file_name, system_data):
 		return
 
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
 	faceInfo = get_possible_faces(2, system_data, image, m, n, tempX, tempY)
-
 	image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
 	for face in faceInfo:
 		region = face[1]
 		cv2.rectangle(image, (region[1], region[0]), (region[3], region[2]), 
-			(0, 255, 0), 1)
+			(0, 255, 0), 2)
 		if (face[0] == -1):
 			face[0] = "unknown"
-		cv2.putText(image, str(face[0]), (region[1], region[0]), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 2)
+		cv2.putText(image, str(face[0]), (region[1], region[0]), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
 
 	return fm.write_temp_image(image)
+
+def detect_faces_to_udpate_system(file_name, system_data, new_threshold = None):
+	image, m, n, tempX, tempY = fm.read_image(file_name)
+	if (m == -1):
+		print("something wrong 1")
+		return
+	image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+	system_data.change_detection_threshold(new_threshold)
+	faceInfo = get_possible_faces(1, system_data, image, m, n, tempX, tempY)
+	system_data.recover_detection_threshold()
+
+	return faceInfo
+
 

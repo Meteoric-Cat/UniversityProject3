@@ -3,7 +3,7 @@
 3 increase the darkness of his eyes
 4 increase the darkness of his eyes and reduce the background
 5 remove other people and increase the darkness of his eyes
-6 acceptable
+6 acceptable, but detection threshold for this face is roughly 3500
 7 remove other people and increase the darkness of his eyes
 8 maybe increase the size of his head
 9 doesn't work because of the ambient condition
@@ -15,3 +15,5 @@
 15 increase the head of them
 16 increase the size of is head and remove other people
 17 good but remove other people
+
+

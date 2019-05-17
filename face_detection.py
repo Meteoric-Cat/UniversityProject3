@@ -13,7 +13,7 @@ if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
 	temp = input("Input name of the image:")
-	imagePath = './input/cauphuong/%s.jpg' % temp
+	imagePath = './input/cautrinh/%s.jpg' % temp
 	image = cv2.imread(imagePath)
 
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)

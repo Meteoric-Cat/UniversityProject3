@@ -4,12 +4,10 @@ from PySide2 import QtWidgets as qtw
 from PySide2 import QtGui as qtgui 
 
 import child_layout1 as cl1 
+import child_layout2 as cl2
 
-IMAGE_W = 1200
-IMAGE_H = 1000
-
-CHILD_LAYOUT_W = 400
-CHILD_LAYOUT_H = 1000
+from constants import CHILD_LAYOUT_W, CHILD_LAYOUT_H, IMAGE_W, IMAGE_H
+from constants import CHILD1_TO_CHILD2, CHILD2_TO_CHILD1
 
 class CentralView(qtw.QHBoxLayout):
 	def __init__(self):
@@ -38,16 +36,36 @@ class CentralView(qtw.QHBoxLayout):
 		#self.image.setPixmap(self.pixmap)
 
 	def create_child_layout(self):	
-		self.childLayout = cl1.ChildLayout1(self)
-		self.childLayout.setMinimumSize(CHILD_LAYOUT_W, CHILD_LAYOUT_H)
-		self.childLayout.setMaximumSize(CHILD_LAYOUT_W, CHILD_LAYOUT_H)
-		self.addWidget(self.childLayout)
+		self.childLayout1 = cl1.ChildLayout1(self)
+		self.childLayout1.setMinimumSize(CHILD_LAYOUT_W, CHILD_LAYOUT_H)
+		self.childLayout1.setMaximumSize(CHILD_LAYOUT_W, CHILD_LAYOUT_H)		
+
+		self.childLayout2 = cl2.ChildLayout2(self)
+		self.childLayout2.setMinimumSize(CHILD_LAYOUT_W, CHILD_LAYOUT_H)
+		self.childLayout2.setMaximumSize(CHILD_LAYOUT_W, CHILD_LAYOUT_H)
+
+		self.addWidget(self.childLayout1)
 
 	def display_image(self, image):
 		#self.pixmap.swap(qtgui.QPixmap(image))	
 		self.image.setPixmap(qtgui.QPixmap(image))
 		self.image.update()
 
+	def remove_widget(self, widget):
+		self.removeWidget(widget)
+		widget.hide()
 
+	def add_widget(self, widget):
+		self.addWidget(widget)
+		widget.show()
 
+	def switch_child_layout(self, mode):
+		if (mode == CHILD1_TO_CHILD2):
+			self.remove_widget(self.childLayout1)
+			self.add_widget(self.childLayout2)
+		else:
+			self.remove_widget(self.childLayout2)
+			self.add_widget(self.childLayout1)
+
+		self.update()
 
