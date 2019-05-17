@@ -6,6 +6,8 @@ import numpy as np
 import utils as ut 
 import file_system_manager as fm
 import database_manager as db 
+import pca_manager as pca
+
 
 OUTPUT_SIZE = (100, 100)
 
@@ -169,47 +171,15 @@ def split_to_get_face(image, pivot, dist, file_output, ratio = (-0.5, 1.5, -0.9,
 	tempImage = image[top:bottom, left:right]
 	tempImage = cv2.resize(tempImage, output_size)
 
-	if (file_output):
-		cv2.imshow("Facial image", tempImage)
-		cv2.waitKey(100)
+	return tempImage
 
-		check = input("Is it a facial image?(y/n)")
-		if (check != 'y'):
-			return
-
-		personID = int(input("Person ID:"))
-		#return the matched person or the person with largest person id
-		person = db.get_people(personID)
-
-		if (person.first() is None or person.first().Id != personID):
-			check = input("This person's information doesn't exist. Create new one (y/n):")
-
-			if (check == 'y'):
-				name = input("Name:")
-				age = int(input("Age:"))
-				occupation = input("Occupation:")
-
-				db.create_people([name, age, occupation])
-				check = True
-				if (person.first() is not None):
-					personID = person.first().Id + 1
-				else:
-					personID = 1
-				print("This person id will be:%s" % personID)
-			else:
-				check = None
-
-		if not (check is None):
-			fm.write_facial_image_to_file(personID, tempImage)		
-			# return 'hello'
-		cv2.destroyWindow("Facial image")
-	# return 'hallo'
-
-def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs,
+def get_face_base_on_eye_pairs(system_data, image, region_info, region_skin_image, eye_pairs,
 		m, n, tempX, tempY, file_output):
 	faceBorder = find_longest_border(region_skin_image, m, n, tempX, tempY)
 	downVector = [0, 1]
 	# count = 0
+	minDist = 100000000
+	minImage = None
 
 	for eye1, eye2 in eye_pairs:
 		centroid1 = [(eye1[1] + eye1[3]) / 2, (eye1[0] + eye1[2]) / 2]
@@ -236,14 +206,28 @@ def transform_base_on_eye_pairs(image, region_info, region_skin_image, eye_pairs
 
 		#print(tempImage[1,1,1])
 		#count += 1
-		value = split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
+		tempImage = split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2), 
 			file_output)
+		check, dist = pca.detect_face(tempImage, system_data.mean, system_data.eigenfaces, 
+			dist_threshold = system_data.detectionThreshold)
+
+		if (check):
+			if (dist < minDist):
+				minDist = dist
+				minImage = tempImage
+
+	return minDist, minImage
+
 	# 	if (value == 'hello'):
 	# 		print('bye')
 	# 		return value
 	# return value
 
-def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
+def get_possible_face_regions(mode, system_data, image, m, n, tempX, tempY, mean, eigenfaces, file_output = True):
+	'''
+	 mode 1: for detection only
+	 mode 2: for recognization
+	'''
 	if (m == -1):
 		print("something wrong 0")
 		return
@@ -277,7 +261,8 @@ def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
 	print('hello7')
 	result = []	
 	image = image.astype(np.uint8)
-	image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+	grayscaleImage = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2GRAY)
+	indexList = range(0, system_data.eigenfaceCount)
 	for region in regionInfo:
 		tempSkinImage = skinMap[region[0]:region[2], region[1]:region[3]].copy()
 
@@ -287,12 +272,18 @@ def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
 		eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
 
 		if (len(eyePairs) > 0):
-			result.append(region)
-			value = transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, file_output)
-			# if (value == 'hello'):
-			# 	break
-			# pass
-	regionInfo = result
+			dist, regionImage = get_face_base_on_eye_pairs(grayscaleImage, region, tempSkinImage, 
+				eyePairs, tempM, tempN, tempTempX, tempTempY, file_output)
+			personId = pca.recognize(regionImage, system_data.mean, system_data.eigenfaces, indexList,
+				system_data.subspaceImages, system_data.subspaceImageWeights, 
+				dist_threshold = system_data.recognizationThreshold)
+
+			if (mode == 1):
+				result.append([personId, tempImage])
+			else:
+				result.append([personId, region])
+	
+	return result		
 
 	#display image to check the bounding box
 	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)

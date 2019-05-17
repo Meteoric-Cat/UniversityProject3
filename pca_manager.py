@@ -19,24 +19,25 @@ def find_meanface_and_eigenfaces(component_count = 30):
 
 	return meanface, eigenfaces
 
-def detect_face(image, mean, eigenfaces, dist_threshold = 100):
+def detect_face(image, mean, eigenfaces, dist_threshold = 1500):
 	if (mean is None):
 		mean, eigenfaces = fm.read_meanface_and_eigenfaces(None)
 
 	temp = image.flatten()
 	tempImage = np.zeros((1, temp.shape[0]))
 	tempImage[0, :] = temp[:]
-	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 
+	projectionResult = PCAProject(tempImage, mean, eigenfaces)
 	reconstructedImage = PCABackProject(projectionResult, mean, eigenfaces)
 	# print(ut.euclid_dist(reconstructedImage, tempImage))
-
-	if (ut.euclid_dist(reconstructedImage, tempImage) < dist_threshold):
-		return True		
-	return False
+	
+	dist = ut.euclid_dist(reconstructedImage, tempImage)
+	if (dist < dist_threshold):
+		return True, dist
+	return False, dist
 
 def recognize_face(image, mean = None, eigenfaces = None, 
-		indexList = None, subspace_images = None, subspace_image_weights = None, dist_threshold = 5):
+		index_list = None, subspace_images = None, subspace_image_weights = None, dist_threshold = 5):
 	if (mean is None):
 		mean, eigenfaces = fm.read_meanface_and_eigenfaces(None)
 
@@ -48,12 +49,12 @@ def recognize_face(image, mean = None, eigenfaces = None,
 	if (subspace_images is None):
 		subspace_images = db.get_subspace_images()
 		subspace_image_weights = dbut.aggregate_subspaceimage_weights(subspace_images)
-		temp = range(0, len(subspace_images))
+		index_list = range(0, len(subspace_images))
 
 	min_dist = 1000000000
 	personId = -1
 	
-	for index in indexList:
+	for index in index_list:
 		dist = ut.euclid_dist(subspace_image_weights[index], projectionResult)		
 		if (dist < min_dist):
 			min_dist = dist

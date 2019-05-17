@@ -3,6 +3,7 @@ from cv2 import imwrite, imread, IMREAD_GRAYSCALE
 import os
 import numpy as np
 import database_manager as db
+import csv
 
 IMAGE_PATH = "image_storage"
 OUTPUT_SIZE = (100, 100)
@@ -53,10 +54,11 @@ def read_facial_images_into_matrix(personCount = None, directory = None, as_rows
 
 def clean_eigenface_images_up(directory = IMAGE_PATH + "/eigenface_images"):
 	os.remove(directory + '/mean.jpg')
+	os.remove(directory + '/eigenfaces.csv')
 
-	entries = os.scandir(directory)
-	for entry in entries:
-		os.remove(entry.path)
+	# entries = os.scandir(directory)
+	# for entry in entries:
+	# 	os.remove(entry.path)
 
 def write_meanface_and_eigenfaces(mean, eigenfaces, directory = None, output_size = OUTPUT_SIZE):
 	check = False
@@ -70,30 +72,45 @@ def write_meanface_and_eigenfaces(mean, eigenfaces, directory = None, output_siz
 	temp = mean.reshape(output_size)
 	imwrite(directory + "/mean.jpg", temp)
 	
-	count = 0
-	directory = directory + "/eigenface_%s.jpg"
+	# count = 0
+	# directory = directory + "/eigenface_%s.jpg"
 
-	# print(eigenfaces[0])
-	for face in eigenfaces:	
-		temp = face.reshape(output_size)
-		count += 1
-		imwrite(directory % count, temp)
+	# # print(eigenfaces[0])
+	# for face in eigenfaces:	
+	# 	temp = face.reshape(output_size)
+	# 	count += 1
+	# 	imwrite(directory % count, temp)
+
+	with open(directory + "/eigenfaces.csv", "w") as csvFile:
+		csvWriter = csv.writer(csvFile, delimiter = ",", quotechar = '"', quoting = csv.QUOTE_MINIMAL)
+
+		for eigenface in eigenfaces:
+			csvWriter.writerow(list(eigenface))
 
 	return check
 
-def read_meanface_and_eignfaces(directory, eigenface_count = 10):
+def read_meanface_and_eignfaces(directory = None, eigenface_count = 11):
 	if (directory is None):
 		directory = IMAGE_PATH + "/eigenface_images"
 
 	mean = imread(directory + "/mean.jpg").flatten()
+	entries = os.scandir(directory) 
 
-	eigenfaces = np.zeros((eigenface_count, mean.shape[1]))
-	temp = range(0, eigenface_count)
-	directory = directory + "/eigenface_%s.jpg"
+	eigenfaces = None
+	with open(directory + "/eigenfaces.csv") as csvFile:
+		csvReader = csv.reader(csvFile, delimiter=",")
 
-	for i in temp:
-		tempImage = imread(directory % i).flatten()
-		eigenfaces[i, :] = tempImage[:]
+		rowCount = sum(1 for row in csvReader)
+		eigenface_count = int(min(eigenface_count, rowCount))
+		eigenfaces = np.zeros([eigenface_count, OUTPUT_SIZE[0] * OUTPUT_SIZE[1]])
+
+		r = 0
+		for row in csvReader:
+			c = 0
+			for value in row:
+				eigenfaces[r, c] = float(value)
+				c += 1
+			r += 1
 
 	return mean, eigenfaces
 		
