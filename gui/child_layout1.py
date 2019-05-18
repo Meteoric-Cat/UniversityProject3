@@ -21,6 +21,7 @@ class ChildLayout1(qtw.QWidget):
 
 		self.create_recognization_button()
 		self.create_update_button()
+		self.create_usermanagement_button()
 
 	def create_recognization_button(self):
 		self.recognizationButton = qtw.QPushButton("Recognize")
@@ -29,10 +30,14 @@ class ChildLayout1(qtw.QWidget):
 		self.layout.addWidget(self.recognizationButton)
 		
 	def create_update_button(self):
-		self.updateButton = qtw.QPushButton("Update system")
+		self.updateButton = qtw.QPushButton("Update Re-system")
 		self.updateButton.setMaximumSize(BUTTON_W, BUTTON_H)
 		self.updateButton.setMinimumSize(BUTTON_W, BUTTON_H)
 		self.layout.addWidget(self.updateButton)
+
+	def create_usermanagement_button(self):
+		self.userButton = qtw.QPushButton("Manage User")
+		
 
 	def connect_handlers(self):
 		self.recognizationButton.clicked.connect(self.handle_recognization)				

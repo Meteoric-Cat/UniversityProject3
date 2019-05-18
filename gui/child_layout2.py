@@ -55,13 +55,13 @@ class ChildLayout2(qtw.QWidget):
 
 	def create_distlabels(self):
 		self.detectionDistLabel = qtw.QLabel()
-		self.detectionDistLabel.setText("Detection dist ")
+		self.detectionDistLabel.setText("Detection dist")
 		self.layout1.addWidget(self.detectionDistLabel)
 		self.layout1.setAlignment(self.detectionDistLabel, qtcore.Qt.AlignHCenter | qtcore.Qt.AlignVCenter)
 		# self.layout1.setAlignment(self.detectionDistLabel, qtcore.Qt.AlignTop)
 
 		self.recognizationDistLabel = qtw.QLabel()
-		self.recognizationDistLabel.setText("Recognization dist ")
+		self.recognizationDistLabel.setText("Recognization dist")
 		self.layout1.addWidget(self.recognizationDistLabel)
 		self.layout1.setAlignment(self.recognizationDistLabel, qtcore.Qt.AlignHCenter | qtcore.Qt.AlignVCenter)
 		# self.layout1.setAlignment(self.recognizationDistLabel, qtcore.Qt.AlignTop)
@@ -91,6 +91,12 @@ class ChildLayout2(qtw.QWidget):
 
 			self.layout2.addWidget(self.infoEditor, i, 1, 1, 3)
 
+	def get_editors_data(self, start, end):
+		result = []
+		for i in range(start, end + 1):
+			result.append(self.infoEditors[i].text())
+		return result
+
 	@qtcore.Slot()
 	def handle_saving(self):
 		if (self.infoEditors[0].text() == "" or self.imageId == -1):
@@ -98,9 +104,11 @@ class ChildLayout2(qtw.QWidget):
 			return
 
 		if (self.facesInfo[self.imageId][0] <= -1):
-			db.create_people([str(self.infoEditors[1].text()), int(self.infoEditors[2].text()), str(self.infoEditors[3].text())])
+			db.create_people(self.get_editors_data(1, 3))
 			self.facesInfo[self.imageId][0] = db.get_max_personid()
 			print(self.facesInfo[self.imageId][0])
+		else:
+			db.update_people(self.get_editors_data(0, 3))
 
 		fm.write_facial_image_to_file(self.facesInfo[self.imageId][0], self.facesInfo[self.imageId][1])
 		self.doneSaving = True

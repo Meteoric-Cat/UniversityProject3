@@ -119,7 +119,7 @@ def get_eye_pairs(region_skin_image, m, n, tempX, tempY):
 	
 	eyeBlockInfo = []
 	ut.get_connected_regions(region_skin_image, m, n, tempX, tempY, eyeBlockInfo, 1)
-	eyeBlockInfo = find_possible_eye_blocks(region_skin_image, m, n, tempX, tempY, eyeBlockInfo, width_ratio = (0.02, 0.4))	
+	eyeBlockInfo = find_possible_eye_blocks(region_skin_image, m, n, tempX, tempY, eyeBlockInfo, width_ratio = (0.01, 0.4))	
 	eyeBlockInfo = match_eyes(region_skin_image, m, n, eyeBlockInfo, dist_ratio = (0, 0.65))
 
 	#print(eyeBlockInfo)
@@ -248,7 +248,7 @@ def get_possible_faces(mode, system_data, image, m, n, tempX, tempY):
 
 	print('hello6')
 	regionInfo = get_useful_regions_base_on_ratio(skinMap, regionInfo, 
-		area_size = (40, 40), aspect_ratio = (0.2, 4.6), occupancy_ratio = 0.2)
+		area_size = (40, 40), aspect_ratio = (0.2, 3.6), occupancy_ratio = 0.2)
 
 	print('hello7')
 	result = []	
@@ -311,7 +311,7 @@ def detect_and_recognize_faces(file_name, system_data):
 			(0, 255, 0), 2)
 		if (face[0] == -1):
 			face[0] = "unknown"
-		cv2.putText(image, str(face[0]), (region[1], region[0] + 50), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
+		cv2.putText(image, str(face[0]), (region[1], region[0] + 25), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
 
 	return fm.write_temp_image(image)
 

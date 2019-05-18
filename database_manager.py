@@ -98,13 +98,21 @@ def create_people(*people_data):
 	people = []
 	for personData in people_data:
 		if (len(personData) >= 3):
-			person = Person(Name = personData[0], Age = personData[1], Occupation = personData[2])
+			person = Person(Name = personData[0], Age = int(personData[1]), Occupation = personData[2])
 			people.append(person)
 
 	if (len(people) > 0):
 		session.add_all(people)
 		session.commit()
 	session.close()
+
+def update_people(*people_data):
+	session = Session()
+	for personData in people_data:
+		session.query(Person).filter(Person.Id == int(personData[0]))\
+			.update({Person.Name: personData[1], Person.Age: int(personData[2]), Person.Occupation: personData[3]}, 
+				synchronize_session = False)
+	session.commit()
 
 def create_subspace_images(file_info, weights, remove = False):
 	if (remove):

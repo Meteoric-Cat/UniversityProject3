@@ -129,7 +129,7 @@ def read_image(file_path):
 	image = imread(file_path)
 	if (image is None):
 		return None, -1, -1, -1, -1
-	m, n, tempX, tempY = ut.get_size_and_ranges(image)
+	m, n, p = image.shape
 
 	if (m > 1000 or n > 1000):
 		image = resize(image, dsize = None, fx = 0.7, fy = 0.7)
@@ -137,6 +137,7 @@ def read_image(file_path):
 	else:
 		if (m > 2000 or n > 2000):
 			image = resize(image, dsize = None, fx = 0.4, fy = 0.4)
+	m, n, tempX, tempY = ut.get_size_and_ranges(image)			
 	return image, m, n, tempX, tempY
 
 def write_temp_image(image, directory = None):
