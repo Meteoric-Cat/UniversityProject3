@@ -288,7 +288,8 @@ def get_possible_face_regions(image, m, n, tempX, tempY, file_output = True):
 
 		if (len(eyePairs) > 0):
 			result.append(region)
-			value = transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, tempM, tempN, tempTempX, tempTempY, file_output)
+			value = transform_base_on_eye_pairs(image, region, tempSkinImage, eyePairs, 
+				tempM, tempN, tempTempX, tempTempY, file_output)
 			# if (value == 'hello'):
 			# 	break
 			# pass

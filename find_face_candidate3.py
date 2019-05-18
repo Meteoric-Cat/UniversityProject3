@@ -207,6 +207,7 @@ def get_face_base_on_eye_pairs(system_data, image, region_info, region_skin_imag
 		tempImage = split_to_get_face(tempImage, pivot, ut.distance_between_points(centroid1, centroid2))
 		check, dist = pca.detect_face(tempImage, system_data.mean, system_data.eigenfaces, 
 			dist_threshold = system_data.detectionThreshold)
+		# print("DETECTION DIST", dist)
 		# cv2.imshow("value", tempImage)
 		# cv2.waitKey(0)
 		# cv2.destroyWindow("value")
@@ -263,17 +264,17 @@ def get_possible_faces(mode, system_data, image, m, n, tempX, tempY):
 		eyePairs = get_eye_pairs(tempSkinImage, tempM, tempN, tempTempX, tempTempY)		
 
 		if (len(eyePairs) > 0):
-			dist, regionImage = get_face_base_on_eye_pairs(system_data, grayscaleImage, region, tempSkinImage, 
+			detectionDist, regionImage = get_face_base_on_eye_pairs(system_data, grayscaleImage, region, tempSkinImage, 
 				eyePairs, tempM, tempN, tempTempX, tempTempY)
 			if not (regionImage is None):
-				personId = pca.recognize_face(regionImage, system_data.mean, system_data.eigenfaces, indexList,
+				personId, recognizationDist = pca.recognize_face(regionImage, system_data.mean, system_data.eigenfaces, indexList,
 				system_data.subspaceImages, system_data.subspaceImageWeights, 
 				dist_threshold = system_data.recognizationThreshold)
 
 				if (mode == 1):
-					result.append([personId, regionImage])
+					result.append([personId, regionImage, detectionDist, recognizationDist])
 				else:
-					result.append([personId, region])
+					result.append([personId, region, detectionDist, recognizationDist])
 	
 	return result		
 
@@ -310,7 +311,7 @@ def detect_and_recognize_faces(file_name, system_data):
 			(0, 255, 0), 2)
 		if (face[0] == -1):
 			face[0] = "unknown"
-		cv2.putText(image, str(face[0]), (region[1], region[0]), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
+		cv2.putText(image, str(face[0]), (region[1], region[0] + 50), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
 
 	return fm.write_temp_image(image)
 

@@ -1,4 +1,4 @@
-from cv2 import imwrite, imread, IMREAD_GRAYSCALE
+from cv2 import imwrite, imread, IMREAD_GRAYSCALE, resize
 
 import os
 import csv
@@ -74,15 +74,6 @@ def write_meanface_and_eigenfaces(mean, eigenfaces, directory = None, output_siz
 	temp = mean.reshape(output_size)
 	imwrite(directory + "/mean.jpg", temp)
 	
-	# count = 0
-	# directory = directory + "/eigenface_%s.jpg"
-
-	# # print(eigenfaces[0])
-	# for face in eigenfaces:	
-	# 	temp = face.reshape(output_size)
-	# 	count += 1
-	# 	imwrite(directory % count, temp)
-
 	with open(directory + "/eigenfaces.csv", "w") as csvFile:
 		csvWriter = csv.writer(csvFile, delimiter = ",", quotechar = '"', quoting = csv.QUOTE_MINIMAL)
 
@@ -141,11 +132,11 @@ def read_image(file_path):
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)
 
 	if (m > 1000 or n > 1000):
-		image = cv2.resize(image, dsize = None, fx = 0.7, fy = 0.7)
+		image = resize(image, dsize = None, fx = 0.7, fy = 0.7)
 		pass
 	else:
 		if (m > 2000 or n > 2000):
-			image = cv2.resize(image, dsize = None, fx = 0.4, fy = 0.4)
+			image = resize(image, dsize = None, fx = 0.4, fy = 0.4)
 	return image, m, n, tempX, tempY
 
 def write_temp_image(image, directory = None):

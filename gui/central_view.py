@@ -18,7 +18,7 @@ class CentralView(qtw.QHBoxLayout):
 		super().__init__()
 
 		self.dataReference = None
-		
+
 		self.create_layout1()
 		self.create_layout2()
 
@@ -62,18 +62,26 @@ class CentralView(qtw.QHBoxLayout):
 		if (mode == CHILD1_TO_CHILD2):			
 			self.remove_widget(self.childLayout1)			
 			self.remove_widget(self.image)
+
 			self.add_widget(self.imageBoard)
+			self.childLayout2.clean_editors_up()
 			self.add_widget(self.childLayout2)
 		else:
 			self.remove_widget(self.childLayout2)
 			self.remove_widget(self.imageBoard)
+
 			self.add_widget(self.image)
 			self.add_widget(self.childLayout1)			
 
 		self.update()
 
-	def handle_system_updating(self):
+	def handle_system_updating(self):		
 		fileName = qtw.QFileDialog.getOpenFileName(None, self.tr("Choose Image"), "./input")[0]
-		faceInfo = fl.detect_faces_to_update_system(fileName, self.dataReference, new_threshold = 3600)
+		facesInfo = fl.detect_faces_to_update_system(fileName, self.dataReference, 
+			new_threshold = 4000)
 
-		self.imageBoard.update_images(faceInfo)
+		if (facesInfo is None):
+			return
+
+		self.childLayout2.save_faces_info(facesInfo)
+		self.imageBoard.update_images(facesInfo)

@@ -64,7 +64,7 @@ def recognize_face(image, mean = None, eigenfaces = None,
 	if (min_dist > dist_threshold):
 		personId = -1
 	print('recognize dist', min_dist)
-	return personId
+	return personId, min_dist
 
 if (__name__ == '__main__'):
 	find_meanface_and_eigenfaces()

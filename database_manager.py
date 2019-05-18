@@ -76,6 +76,12 @@ def get_people_count():
 	session.close()
 	return result[0][0]
 
+def get_max_personid():
+	session = Session()
+	result = session.query(func.max(Person.Id))[0][0]
+	session.close()
+	return result
+
 def get_subspace_images(ids = None):
 	session = Session()
 	if (ids is None):
@@ -85,16 +91,19 @@ def get_subspace_images(ids = None):
 	session.close()
 	return result
 
-def create_people(*people):
+def create_people(*people_data):
 	'''each person data will be saved in the form of name, age, occupation'''	
 	session = Session()
 
-	for personData in people:
+	people = []
+	for personData in people_data:
 		if (len(personData) >= 3):
 			person = Person(Name = personData[0], Age = personData[1], Occupation = personData[2])
+			people.append(person)
 
-	session.add(person)
-	session.commit()
+	if (len(people) > 0):
+		session.add_all(people)
+		session.commit()
 	session.close()
 
 def create_subspace_images(file_info, weights, remove = False):

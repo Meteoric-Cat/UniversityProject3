@@ -1,6 +1,8 @@
 from PySide2 import QtCore as qtcore 
 from PySide2 import QtWidgets as qtw 
 
+from gc import collect
+
 import find_face_candidate3 as fl
 from constants import BUTTON_H, BUTTON_W, CHILD1_TO_CHILD2
 
@@ -27,7 +29,7 @@ class ChildLayout1(qtw.QWidget):
 		self.layout.addWidget(self.recognizationButton)
 		
 	def create_update_button(self):
-		self.updateButton = qtw.QPushButton("Update database")
+		self.updateButton = qtw.QPushButton("Update system")
 		self.updateButton.setMaximumSize(BUTTON_W, BUTTON_H)
 		self.updateButton.setMinimumSize(BUTTON_W, BUTTON_H)
 		self.layout.addWidget(self.updateButton)
@@ -44,9 +46,13 @@ class ChildLayout1(qtw.QWidget):
 		fileName = fl.detect_and_recognize_faces(fileName, self.parent.dataReference)
 		self.parent.display_image(fileName)
 
+		collect()
+
 	@qtcore.Slot()
 	def handle_update(self):
 		self.parent.switch_child_layout(CHILD1_TO_CHILD2)	
 		self.parent.handle_system_updating()
+
+		collect()
 
 
