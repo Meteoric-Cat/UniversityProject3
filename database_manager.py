@@ -57,15 +57,18 @@ def renew_subspaceimages_table():
 	SubspaceImage.__table__.drop(engine)
 	SubspaceImage.__table__.create(engine)
 
-def get_people(*ids):
+def get_people(allFlag = False, *ids):
 	session = Session()
 	people = None
 	
 	if (len(ids) > 0):
 		people = session.query(Person).filter(Person.Id.in_(ids))
-	if (people.first() is None):
-		maxid = session.query(func.max(Person.Id))[0][0]
-		people = session.query(Person).filter(Person.Id == maxid)
+	if (people is None):
+		if not (allFlag):
+			maxid = session.query(func.max(Person.Id))[0][0]		
+			people = session.query(Person).filter(Person.Id == maxid)
+		else:
+			people = session.query(Person).all()
 
 	session.close()
 	return people
@@ -114,6 +117,18 @@ def update_people(*people_data):
 				synchronize_session = False)
 	session.commit()
 
+def delete_people(*people_data):
+	session = Session()
+	peopleIds = []
+
+	for personData in people_data:
+		peopleIds.append(int(personData[0]))
+	statement = Person.__table__.delete().where(Person.Id.in_(peopleIds))
+
+	session.execute(statement)
+	session.commit()
+	session.close()	
+
 def create_subspace_images(file_info, weights, remove = False):
 	if (remove):
 		delete_subspace_images(None)
@@ -130,13 +145,19 @@ def create_subspace_images(file_info, weights, remove = False):
 	session.commit()
 	session.close()
 
-def delete_subspace_images(ids = None):
-	if (ids is None):
+def delete_subspace_images(file_paths = None):
+	if (file_paths is None):
 		session = Session()
 		session.execute('''TRUNCATE TABLE SubspaceImages''')
 		session.commit()
 		session.close()
 		return
+
+	session = Session()
+	statement = SubspaceImage.__table__.delete().where(SubspaceImage.Path.in_(file_paths))
+	session.execute(statement)
+	session.commit()
+	session.close()
 
 def clean_up():
 	engine.dispose()

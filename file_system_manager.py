@@ -18,11 +18,13 @@ def read_facial_images_into_matrix(personCount = None, directory = None, as_rows
 	if (directory is None):
 		directory = IMAGE_PATH + "/facial_images/person_%s"
 
+	peopleIds = []
 	if (personCount is None):
-		personCount = db.get_people_count()
-		temp = range(1, personCount + 1)		
-		for i in temp:
-			imageCount += len(list(os.scandir(directory % i)))
+		people = db.get_people(allFlag = True)
+		# temp = range(1, personCount + 1)		
+		for person in people:
+			imageCount += len(list(os.scandir(directory % person.Id)))
+			peopleIds.append(person.Id)
 
 	result = None
 	fileInfo = []
@@ -30,26 +32,26 @@ def read_facial_images_into_matrix(personCount = None, directory = None, as_rows
 	if (as_rows):
 		result = np.zeros((imageCount, image_size[0] * image_size[1]))
 		count = 0
-		for i in temp:
-			entries = os.scandir(directory % i)
+		for tempId in peopleIds:
+			entries = os.scandir(directory % tempId)
 			for entry in entries:
 				tempImage = imread(entry.path, IMREAD_GRAYSCALE)
 				tempImage = tempImage.flatten()				
 
 				result[count, :] = tempImage[:]
-				fileInfo.append([i, str(entry.path)])
+				fileInfo.append([tempId, str(entry.path)])
 				count += 1
 	else:
 		result = np.zeros((image_size[0] * image_size[1], imageCount))
 		count = 0
-		for i in temp:
-			entries = os.scandir(directory % i)
+		for tempId in peopleIds:
+			entries = os.scandir(directory % tempId)
 			for entry in entries:
 				tempImage = imread(entry.path, IMREAD_GRAYSCALE)
 				tempImage = tempImage.flatten()
 
 				result[:, count] = tempImage[:]
-				fileInfo.append([i, str(entry.path)])
+				fileInfo.append([tempId, str(entry.path)])
 				count += 1
 
 	return (result, fileInfo)
@@ -147,3 +149,23 @@ def write_temp_image(image, directory = None):
 	imwrite(directory, image)
 	return directory
 
+def create_person_directory(personId):
+	directory = IMAGE_PATH + "/person_%s" % personId
+	if not (os.path.isdir(directory)):
+		os.mkdir(directory)
+
+def remove_person_directory(personId, directory = None):
+	if (directory is None):
+		directory = IMAGE_PATH + "/person_%s" % personId
+
+	if (os.path.isdir(directory)):
+		entries = os.scandir(directory)
+		for entry in entries:
+			os.remove(entry.path)
+		os.rmdir(directory)
+
+def remove_image(file_path):
+	if (os.path.isfile(file_path)):
+		os.remove(file_path)
+		return True
+	return False

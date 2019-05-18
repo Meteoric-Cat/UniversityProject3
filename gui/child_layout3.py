@@ -3,91 +3,110 @@ from PySide2 import QtWidgets as qtw
 from PySide2 import QtGui as qtgui 
 
 import file_system_manager as fm 
+import database_manager as db 
+import system_updater as su 
 
-IMAGE_SIZE=(100, 100)
-SCROLL_SIZE=(1200, 1000)
-BOARD_SIZE=(1200, 2000)
+from constants import BUTTON_H, BUTTON_W
 
-class ImageBoard(qtw.QScrollArea):
+TABLE_HEADERS = ["ID", "NAME", "AGE", "OCCUPATION"]
+
+class PeopleTable(qtw.QTableWidget):
 	def __init__(self, parent):
 		super().__init__()
-		
-		self.images = []
-		self.spacer = qtw.QSpacerItem(IMAGE_SIZE[0], IMAGE_SIZE[1])
-		self.parent = parent	
-		self.visibleCount = 0	
 
-		self.setMinimumSize(SCROLL_SIZE[0], SCROLL_SIZE[1])
-		self.setMaximumSize(SCROLL_SIZE[0], SCROLL_SIZE[1])
+		self.parent = parent
+		self.setHorizontalHeaderLabels(TABLE_HEADERS)
+		self.cellClicked.connect(self.handle_cell_selection)
 
-		self.create_content_area()
+		self.setRowCount(db.get_people_count())
+		self.setColumnCount(len(TABLE_HEADERS))
 
-	def create_content_area(self):
-		self.content = qtw.QWidget()
-		self.content.setMinimumSize(BOARD_SIZE[0], BOARD_SIZE[1])
-		self.content.setMinimumSize(BOARD_SIZE[0], BOARD_SIZE[1])
+		self.populate_data()
 
-		self.contentLayout = qtw.QGridLayout()
-		self.content.setLayout(self.contentLayout)
-
-		self.setWidget(self.content)
-
-	def update_images(self, images_info):
-		# self.clean_images_up()
-
+	def populate_data(self):
+		people = db.get_people(allFlag = True)
 		count = 0
-		for imageInfo in images_info:			
-			path = fm.write_temp_image(imageInfo[1])
-			if (len(self.images) <= count):
-				image = Image(self, count)
-				self.images.append(image)
 
-			self.images[count].add_image(path)
-			self.contentLayout.addWidget(self.images[count], int(count / 12), count % 12, 1, 1)			
-			self.contentLayout.setAlignment(self.images[count], qtcore.Qt.AlignTop | qtcore.Qt.AlignLeft)
-			self.images[count].show()
+		for person in people:
+			values = [str(person.Id)]
+			if (self.item(count, 0) is None):
+				for i in range(0, self.columnCount()):
+					item = qtw.QTableWidgetItem()
+					self.setItem(count, i, item)
+
+			self.item(count, 0).setText(str(person.Id))
+			self.item(count, 1).setText(person.Name)
+			self.item(count, 2).setText(str(person.Age))
+			self.item(count, 3).setText(person.Occupation)
+
 			count += 1
+		print(count)
 
-		self.add_spacer(count)
-		self.remove_redundant_images(count)
+	def get_row_data(self, row, start_col, end_col):
+		result = []
+		for i in range(start_col, end_col + 1):
+			result.append(self.item(row, i).text())
+		return result
 
-		self.content.update()
-		self.visibleCount = count
+	def add_row(self, data):
+		rowCount = self.rowCount()
+		self.insertRow(rowCount)
+		newPersonId = db.get_max_personid()
 
-	def add_spacer(self, count):
-		spacerColumn = 12 - count % 12
-		if (spacerColumn != 0):
-			self.spacer.changeSize(IMAGE_SIZE[0] * spacerColumn, IMAGE_SIZE[1])
-			self.contentLayout.addItem(self.spacer, int(count / 12), count % 12, 1, spacerColumn)
-		
-	def remove_redundant_images(self, count):
-		if (self.visibleCount <= count):
-			return
+		newItem = qtw.QTableWidgetItem()
+		self.setItem(rowCount, 0, newItem)
+		newItem.setText(str(newPersonId))
+		for i in range(1, len(data) + 1):
+			newItem = qtw.QTableWidgetItem()
+			self.setItem(rowCount, i, newItem)
+			newItem.setText(data[i - 1])
 
-		for i in range(count, self.visibleCount):
-			self.contentLayout.removeWidget(self.images[i])
-			self.images[i].hide()
+	def update_row(self, row, new_data):
+		for i in range(0, self.columnCount()):
+			self.item(row, i).setText(new_data[i])
 
-class Image(qtw.QLabel):
-	def __init__(self, parent, imageId):
-		'''image id is the index of the image in ImageInfo list of central view'''
+	@qtcore.Slot(int)
+	def handle_cell_selection(self, row, column):
+		self.parent.show_updating_dialog(row, self.get_row_data(row, 0, 3))
+
+class ChildLayout3(qtw.QWidget):
+	def __init__(self, parent):
 		super().__init__()
 
-		# self.personId = person_id
 		self.parent = parent
-		self.imageId = imageId
+		self.layout = qtw.QVBoxLayout()
+		self.setLayout(self.layout)
 
-		self.setMaximumSize(IMAGE_SIZE[0], IMAGE_SIZE[1])
-		self.setMinimumSize(IMAGE_SIZE[0], IMAGE_SIZE[1])
+		self.create_buttons()
+		self.attach_handlers()
+
+	def create_buttons(self):
+		self.createButton = qtw.QPushButton("Create person")
+		self.createButton.setMinimumSize(BUTTON_W, BUTTON_H)
+		self.createButton.setMaximumSize(BUTTON_W, BUTTON_H)
+		self.layout.addWidget(self.createButton)
+
+		self.imageDeletingButton = qtw.QPushButton("Delete image")
+		self.imageDeletingButton.setMinimumSize(BUTTON_W, BUTTON_H)
+		self.imageDeletingButton.setMaximumSize(BUTTON_W, BUTTON_H)
+		self.layout.addWidget(self.imageDeletingButton)
+
+	def attach_handlers(self):
+		self.createButton.clicked.connect(self.handle_create_button)
+		self.imageDeletingButton.clicked.connect(self.handle_imagedeleting_button)
+	
+	@qtcore.Slot()
+	def handle_create_button(self):
+		self.parent.show_creating_dialog()
+
+	@qtcore.Slot()
+	def handle_imagedeleting_button(self):
+		fileName = qtw.QFileDialog.getOpenFileName(None, "Choose Image", "./image_storage/facial_images")[0]
+		db.delete_subspace_images([fileName])		
+		fm.remove_image(fileName)
+		su.update(self.parent.dataReference)
 
 
-	def add_image(self, file_name):
-		self.setPixmap(qtgui.QPixmap(file_name))
-		self.update()
 
-	def mousePressEvent(self, event):
-		super().mousePressEvent(event)
 
-		self.parent.parent.childLayout2.display_data(self.imageId)
-		
 

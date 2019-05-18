@@ -4,7 +4,7 @@ from PySide2 import QtWidgets as qtw
 from gc import collect
 
 import find_face_candidate3 as fl
-from constants import BUTTON_H, BUTTON_W, CHILD1_TO_CHILD2
+from constants import BUTTON_H, BUTTON_W, CHILD1_TO_CHILD2, CHILD1_TO_CHILD3
 
 class ChildLayout1(qtw.QWidget):
 
@@ -36,15 +36,18 @@ class ChildLayout1(qtw.QWidget):
 		self.layout.addWidget(self.updateButton)
 
 	def create_usermanagement_button(self):
-		self.userButton = qtw.QPushButton("Manage User")
-		
+		self.managementButton = qtw.QPushButton("Manage Information")
+		self.managementButton.setMinimumSize(BUTTON_W, BUTTON_H)
+		self.managementButton.setMaximumSize(BUTTON_W, BUTTON_H)
+		self.layout.addWidget(self.managementButton)
 
 	def connect_handlers(self):
-		self.recognizationButton.clicked.connect(self.handle_recognization)				
-		self.updateButton.clicked.connect(self.handle_update)
+		self.recognizationButton.clicked.connect(self.handle_recognization_button)				
+		self.updateButton.clicked.connect(self.handle_update_button)
+		self.managementButton.clicked.connect(self.handle_management_button)
 
 	@qtcore.Slot()
-	def handle_recognization(self):
+	def handle_recognization_button(self):
 		fileName = qtw.QFileDialog.getOpenFileName(None, self.tr("Choose Image"), "./input")[0]
 		#self.parent.display_image(fileName)
 
@@ -54,10 +57,14 @@ class ChildLayout1(qtw.QWidget):
 		collect()
 
 	@qtcore.Slot()
-	def handle_update(self):
+	def handle_update_button(self):
 		self.parent.switch_child_layout(CHILD1_TO_CHILD2)	
 		self.parent.handle_system_updating()
 
 		collect()
 
 
+	def handle_management_button(self):
+		self.parent.switch_child_layout(CHILD1_TO_CHILD3)
+
+		collect()
