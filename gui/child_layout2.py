@@ -139,8 +139,8 @@ class ChildLayout2(qtw.QWidget):
 		if (self.facesInfo[imageId][0] <= 0):
 			self.clean_editors_up()
 			self.infoEditors[0].setText(str(self.facesInfo[imageId][0]))
-		else:
-			person = db.get_people(self.facesInfo[imageId][0]).first()
+		else:			
+			person = db.get_people(False, self.facesInfo[imageId][0])[0]
 			if not (person is None):
 				self.infoEditors[0].setText(str(person.Id))
 				self.infoEditors[1].setText(person.Name)

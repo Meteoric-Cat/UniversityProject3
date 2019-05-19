@@ -6,7 +6,7 @@ import file_system_manager as fm
 import database_manager as db 
 import system_updater as su 
 
-from constants import BUTTON_H, BUTTON_W
+from constants import BUTTON_H, BUTTON_W, CHILD3_TO_CHILD1
 
 TABLE_HEADERS = ["ID", "NAME", "AGE", "OCCUPATION"]
 
@@ -91,9 +91,15 @@ class ChildLayout3(qtw.QWidget):
 		self.imageDeletingButton.setMaximumSize(BUTTON_W, BUTTON_H)
 		self.layout.addWidget(self.imageDeletingButton)
 
+		self.backButton = qtw.QPushButton("Back")
+		self.backButton.setMinimumSize(BUTTON_W, BUTTON_H)
+		self.backButton.setMaximumSize(BUTTON_W, BUTTON_H)
+		self.layout.addWidget(self.backButton)
+
 	def attach_handlers(self):
 		self.createButton.clicked.connect(self.handle_create_button)
 		self.imageDeletingButton.clicked.connect(self.handle_imagedeleting_button)
+		self.backButton.clicked.connect(self.handle_back_button)
 	
 	@qtcore.Slot()
 	def handle_create_button(self):
@@ -103,8 +109,12 @@ class ChildLayout3(qtw.QWidget):
 	def handle_imagedeleting_button(self):
 		fileName = qtw.QFileDialog.getOpenFileName(None, "Choose Image", "./image_storage/facial_images")[0]
 		db.delete_subspace_images([fileName])		
-		fm.remove_image(fileName)
+		fm.remove_image(fileName)		
 		su.update(self.parent.dataReference)
+
+	@qtcore.Slot()
+	def handle_back_button(self):
+		self.parent.switch_child_layout(CHILD3_TO_CHILD1)
 
 
 

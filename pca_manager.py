@@ -28,9 +28,9 @@ def detect_face(image, mean, eigenfaces, dist_threshold = 1500):
 	tempImage[0, :] = temp[:]
 	# print(type(tempImage[0, 0]), type(mean[0, 0]))	
 
-	projectionResult = PCAProject(tempImage, mean, eigenfaces)
+	projectionResult = PCAProject(tempImage, mean, eigenfaces)	
 	reconstructedImage = PCABackProject(projectionResult, mean, eigenfaces)
-	# print(ut.euclid_dist(reconstructedImage, tempImage))
+	# print("DETECTION DIST:", ut.euclid_dist(reconstructedImage, tempImage))
 	
 	dist = ut.euclid_dist(reconstructedImage, tempImage)
 	if (dist < dist_threshold):
@@ -63,7 +63,7 @@ def recognize_face(image, mean = None, eigenfaces = None,
 
 	if (min_dist > dist_threshold):
 		personId = -1
-	print('recognize dist', min_dist)
+	# print('recognize dist', min_dist)
 	return personId, min_dist
 
 if (__name__ == '__main__'):

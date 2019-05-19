@@ -93,11 +93,19 @@ class CentralView(qtw.QHBoxLayout):
 			self.add_widget(self.childLayout1)			
 
 		if (mode == CHILD1_TO_CHILD3):
-			self.remove_widget(self.image)
 			self.remove_widget(self.childLayout1)
+			self.remove_widget(self.image)
 
 			self.add_widget(self.peopleTable)
 			self.add_widget(self.childLayout3)
+
+		if (mode == CHILD3_TO_CHILD1):
+			self.remove_widget(self.childLayout3)
+			self.remove_widget(self.peopleTable)
+
+			self.add_widget(self.image)
+			self.add_widget(self.childLayout1)
+			
 		self.update()
 
 	def show_creating_dialog(self):
