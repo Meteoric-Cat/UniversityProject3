@@ -7,9 +7,9 @@ def add_paths():
 
 add_paths()	
 
-import window
+import gui_manager as gui
 
 if (__name__ == "__main__"):
 	sys.setrecursionlimit(100000)
 
-	window.run_application()
+	gui.run_application()

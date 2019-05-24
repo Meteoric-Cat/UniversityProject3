@@ -1,4 +1,4 @@
-import pca_manager as pca 
+import eigenface_implementer as pca 
 from constants import MAX_EIGENFACE_COUNT 
 
 def update(system_data):

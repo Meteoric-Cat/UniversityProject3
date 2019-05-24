@@ -6,7 +6,7 @@ import numpy as np
 import utils as ut 
 import file_system_manager as fm
 import database_manager as db 
-import pca_manager as pca
+import eigenface_implementer as pca
 
 
 OUTPUT_SIZE = (100, 100)

@@ -3,7 +3,7 @@ from PySide2 import QtWidgets as qtw
 
 from gc import collect
 
-import find_face_candidate3 as fl
+import region_locator as fl
 from constants import BUTTON_H, BUTTON_W, CHILD1_TO_CHILD2, CHILD1_TO_CHILD3
 
 class ChildLayout1(qtw.QWidget):

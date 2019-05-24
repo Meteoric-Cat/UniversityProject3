@@ -21,7 +21,7 @@ class PeopleTable(qtw.QTableWidget):
 		self.setRowCount(db.get_people_count())
 		self.setColumnCount(len(TABLE_HEADERS))
 
-		self.populate_data()
+		# self.populate_data()
 
 	def populate_data(self):
 		people = db.get_people(allFlag = True)
@@ -40,7 +40,7 @@ class PeopleTable(qtw.QTableWidget):
 			self.item(count, 3).setText(person.Occupation)
 
 			count += 1
-		print(count)
+		# print(count)
 
 	def get_row_data(self, row, start_col, end_col):
 		result = []

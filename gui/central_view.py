@@ -10,7 +10,7 @@ import child_layout3 as cl3
 from constants import CHILD_LAYOUT_W, CHILD_LAYOUT_H, IMAGE_W, IMAGE_H
 from constants import CHILD1_TO_CHILD2, CHILD2_TO_CHILD1, CHILD1_TO_CHILD3, CHILD3_TO_CHILD1
 
-import find_face_candidate3 as fl 
+import region_locator as fl 
 import file_system_manager as fm 
 import input_dialog as dialogs
 
@@ -96,6 +96,7 @@ class CentralView(qtw.QHBoxLayout):
 			self.remove_widget(self.childLayout1)
 			self.remove_widget(self.image)
 
+			self.peopleTable.populate_data()
 			self.add_widget(self.peopleTable)
 			self.add_widget(self.childLayout3)
 
