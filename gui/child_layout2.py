@@ -96,6 +96,8 @@ class ChildLayout2(qtw.QWidget):
 
 			self.layout2.addWidget(self.infoEditor, i, 1, 1, 3)
 
+		self.infoEditors[0].returnPressed.connect(self.handle_editor_return_event)
+
 	def get_editors_data(self, start, end):
 		result = []
 		for i in range(start, end + 1):
@@ -126,6 +128,9 @@ class ChildLayout2(qtw.QWidget):
 
 		self.parent.switch_child_layout(CHILD2_TO_CHILD1)
 
+	def handle_editor_return_event(self):
+		self.display_owner_data(int(self.infoEditors[0].text()))
+
 	def save_faces_info(self, faces_info):
 		self.facesInfo = faces_info
 
@@ -140,15 +145,21 @@ class ChildLayout2(qtw.QWidget):
 			self.clean_editors_up()
 			self.infoEditors[0].setText(str(self.facesInfo[imageId][0]))
 		else:			
-			person = db.get_people(False, self.facesInfo[imageId][0])[0]
-			if not (person is None):
-				self.infoEditors[0].setText(str(person.Id))
-				self.infoEditors[1].setText(person.Name)
-				self.infoEditors[2].setText(str(person.Age))
-				self.infoEditors[3].setText(person.Occupation)
+			self.display_owner_data(self.facesInfo[imageId][0])
 
 		self.detectionDistLabel.setText("Detection dist:" + str(self.facesInfo[imageId][2]))
 		self.recognizationDistLabel.setText("Recognization dist:" + str(self.facesInfo[imageId][3]))
+
+	def display_owner_data(self, owner_id):
+		if (owner_id <= 0):
+			return
+
+		person = db.get_people(False, owner_id)[0]
+		if not (person is None):
+			self.infoEditors[0].setText(str(person.Id))
+			self.infoEditors[1].setText(person.Name)
+			self.infoEditors[2].setText(str(person.Age))
+			self.infoEditors[3].setText(person.Occupation)
 
 	def clean_editors_up(self):
 		for editor in self.infoEditors:
