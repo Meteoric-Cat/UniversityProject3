@@ -43,11 +43,11 @@ class PersonDialog(qtw.QDialog):
 	def create_buttons(self):
 		self.childLayout = qtw.QHBoxLayout()
 
-		self.yesButton = qtw.QPushButton("Yes")
+		self.yesButton = qtw.QPushButton("Save")
 		self.yesButton.setMinimumSize(DIALOG_BUTTON_SIZE[0], DIALOG_BUTTON_SIZE[1])
 		self.yesButton.setMaximumSize(DIALOG_BUTTON_SIZE[0], DIALOG_BUTTON_SIZE[1])
 
-		self.noButton = qtw.QPushButton("No")
+		self.noButton = qtw.QPushButton("Cancel")
 		self.noButton.setMinimumSize(DIALOG_BUTTON_SIZE[0], DIALOG_BUTTON_SIZE[1])
 		self.noButton.setMaximumSize(DIALOG_BUTTON_SIZE[0], DIALOG_BUTTON_SIZE[1])
 

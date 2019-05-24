@@ -24,7 +24,7 @@ class ChildLayout1(qtw.QWidget):
 		self.create_usermanagement_button()
 
 	def create_recognization_button(self):
-		self.recognizationButton = qtw.QPushButton("Recognize")
+		self.recognizationButton = qtw.QPushButton("Recognize faces")
 		self.recognizationButton.setMinimumSize(BUTTON_W, BUTTON_H)
 		self.recognizationButton.setMaximumSize(BUTTON_W, BUTTON_H)
 		self.layout.addWidget(self.recognizationButton)

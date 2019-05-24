@@ -81,7 +81,7 @@ class ChildLayout3(qtw.QWidget):
 		self.attach_handlers()
 
 	def create_buttons(self):
-		self.createButton = qtw.QPushButton("Create person")
+		self.createButton = qtw.QPushButton("Create owner")
 		self.createButton.setMinimumSize(BUTTON_W, BUTTON_H)
 		self.createButton.setMaximumSize(BUTTON_W, BUTTON_H)
 		self.layout.addWidget(self.createButton)
