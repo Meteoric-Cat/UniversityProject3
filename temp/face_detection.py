@@ -1,19 +1,19 @@
-from sys import setrecursionlimit
+from sys import setrecursionlimit, path 
 
 import cv2
 import find_face_candidate as ffc 
 import numpy as np
 import gc
-import utils as ut
 import os
 
+import utils as ut
 import database_manager as db 
 
 if (__name__ == "__main__"):
 	setrecursionlimit(100000)
 
 	temp = input("Input name of the image:")
-	imagePath = './input/vanandvo/%s.jpg' % temp
+	imagePath = '../input/chauminh/%s.jpg' % temp
 	image = cv2.imread(imagePath)
 
 	m, n, tempX, tempY = ut.get_size_and_ranges(image)

@@ -263,15 +263,16 @@ def get_possible_face_regions(image, m, n, tempX, tempY, tempID = 0):
 	# regionInfo = result
 
 	#display image to check the bounding box
-	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-	image[:, :] = skinMap[:, :] * 255
+	# image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2GRAY)
+	# image[:, :] = skinMap[:, :] * 255
 	
 	#ut.convert_between_bgr_and_rgb(image, m, n, tempX, tempY)
-	# image = image.astype(np.uint8)
-	# # temp = len(regionInfo)
-	# # if (temp > 0):
-	# # 	for i in range(0, temp):
-	# # 		cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
+	image = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2BGR)
+	image = image.astype(np.uint8)
+	temp = len(regionInfo)
+	if (temp > 0):
+		for i in range(0, temp):
+			cv2.rectangle(image, (regionInfo[i][1], regionInfo[i][0]), (regionInfo[i][3],regionInfo[i][2]), (0, 255, 0), 2)
 	
 	cv2.imshow('%s' % tempID, image)
 	cv2.waitKey(0)
